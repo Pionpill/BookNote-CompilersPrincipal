@@ -1,0 +1,48 @@
+\documentclass{PionpillNote-art}
+
+\import{sections}{style.tex}
+
+\title{编译原理笔记}
+\author{
+    Pionpill \footnote{笔名：北岸，电子邮件：673486387@qq.com，Github：\url{https://github.com/Pionpill}} \quad Nekasu \footnote{笔名：小十六的伏特加，电子邮箱：1428147954@qq.com，Github：\url{https://github.com/Nekasu}} \\
+    本文档为作者学习《编译原理\footnote{《程序设计语言 编译原理》:陈火旺，国防工业出版社，2020年印刷}》一书时的笔记，\\
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{前言：}
+
+本篇笔记用于应付学校期末考试，本人对这方面也没有进行深入研究。内容浅显，不适合考研等深入学习。
+
+编译原理这门课挺难的，本文只能提供一个基于原教程的精炼与复习，针对晦涩的部分或者跳过的理解性例子，会在对应页下给出注释，但有些东西笔者也不是很理解，望谅解。
+
+本文使用 \LaTeX 语言书写，原文编译环境为 TeXLive + VSCode。文中大部分数字编号，超链接，目录均可实现点击跳转。若无法实现基础的目录点击跳转，那可能是你的 pdf 阅读器有问题，建议使用免费的 Adobe Acrobat Reader DC\footnote{下载连接(pro 为付费版本)：\url{https://get.adobe.com/cn/reader}}或 Chrome\footnote{以及使用 chrome 核心的 edge 浏览器，小心国产浏览器} 浏览器。得益于 \LaTeX 的强大排版功能以及 TikZ 绘图库，本文所有图片文字均为矢量形式，如有不清楚地方放大即可，如果放大了还不清楚，那你可能拿到的是n手资源。
+
+此外，本篇笔记是对原书的提炼总结，只能辅助原书进行学习，有大量例子等理解性文字并未进行说明，如有需要请购买原书。本笔记文案多为原书摘抄或个人总结，图片为本人使用 TikZ 绘制，若需进行引用，可前往下载 \LaTeX 源代码\footnote{\url{https://github.com/Pionpill/Notebook/tree/Pionpill/Lessons}}，并遵守 GPL-v3 协议。
+
+本篇笔记换过一次仓库，之前的版本请前往：\url{https://github.com/Pionpill/Notebook/tree/Pionpill/Lessons}
+
+\date{\today}
+
+\newpage
+
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1} 
+
+\import{sections}{section-1.tex}
+\import{sections}{section-2.tex}
+\import{sections}{section-3.tex}
+\import{sections}{section-4.tex}
+\import{sections}{appendix.tex}
+
+
+
+
+\end{document}
+

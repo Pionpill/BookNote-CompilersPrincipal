@@ -1,0 +1,538 @@
+\section{词法分析}
+\subsection{对于词法分析器的要求}
+\subsubsection{词法分析器的功能和输出形式}
+
+词法分析器的功能是输入源程序，输出单词符号。程序语言的单词符号一般可分为下列五种。
+
+\begin{enumerate}
+    \item \textbf{关键字}：由程序语言定义的具有固定意义的标识符。有时被称为保留字或基本字。例如 begin,if,while......这些字通常不用作一般标识符。
+    \item \textbf{标识符}：用来表示各种名字，如变量名，数组名，过程名等。
+    \item \textbf{常数}：一般用整型，实型，布尔型等等
+    \item \textbf{运算符}：如 +，-，*，/ 等
+    \item \textbf{界符}：如逗号，括号，分号，注释符等
+\end{enumerate}
+
+词法分析器所输出的单词符号常常表示为以下二元式：
+\begin{center}
+    (单词种别，单词符号的属性值)
+\end{center}
+
+单词种别通常采用整数编码。如果一个种别只含一个单词符号，那么，对于这个单词符号，种别编码就完全代表它自身了。若一个种别含有多个单词符号，那么，对于它的每个单词符号，除了给出种别编码之外，还应给出有关的单词符号的属性信息。
+
+单词符号的属性是指单词符号的特征或特性。属性值则是反应特性或特征的值。例如，对于某个标识符，常将存放它的有关信息的符号表项的指针作为属性值。
+
+考虑如下 C++ 代码段：
+\begin{center}
+    while(i>=j) i--;
+\end{center}
+
+经词法分析器处理后，它将被转换为如下的单词符号序列：
+\begin{center}
+    \begin{code}
+        <while,->
+        <(,->
+        <id,指向i的符号表项的指针>
+        <>=,->
+        <id,指向j的符号表项的指针>
+        <),->
+        <id,指向i的符号表项的指针>
+        <--,->
+        <;,->
+    \end{code}
+\end{center}
+
+\subsubsection{词法分析器作为一个独立子程序}
+
+把词法分析器安排为一个独立阶段的好处是：它可以使整个编译程序的结构更简洁，清晰和条理化。
+
+我们可以把词法分析器安排成一个子程序，每当语法分析器需要一个单词符号时就调用这个子程序。每一次调用，词法分析器就从输入串中识别出一个单词符号，把它交给语法分析器。后文假定词法分析器按这种方式工作。
+
+\subsection{词法分析器的设计}
+\subsubsection{输入，预处理}
+
+词法分析器工作的第一步是输入源程序文本。输入串一般是放在一个缓冲区中，称为输入缓冲区。词法分析器的工作(单词符号的识别)可以直接在这个缓冲区中进行。在多数情况下，会对输入串进行预处理。
+
+对于许多程序语言来说，空白符，跳格符，回车符，换行符等编辑性字符除了在文字常数中之外，在别处的任何出现都没有意义，而注解部分几乎允许出现在程序中的任何地方。它们不是程序语言的必要组成部分，它们存在的意义仅是提高程序的易读性和易理解性。对于它们，预处理可以将其剔掉。
+
+有些语言将空白符(一个或数个)用作单词符号之间的间隔，即界符。这种情况下，预处理时可把相继的若干个空白结合成一个。
+
+我们可以设想构造一个预处理子程序，它能够完成上面所述的任务。每当词法分析器调用它时，它就处理出一窜确定长度的输入自读，并将其装进词法分析器所指定的缓冲区中(扫描缓冲区)。这样分析器就可以在此缓冲区中直接进行单词符号的识别，而不必照管其他繁琐事务。
+
+分析器对扫描缓冲区进行扫描时一般用两个指示器，一个指向当前正在识别的单词的开始位置(新单词首字符)，另一个用于向前搜索以寻找单词的终点。
+
+无论扫描缓冲区设得多大都不能保证单词符号不会被它的边界所打断。因此，扫描缓冲区最好的使用一个如下所示得一分为二得区域。
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font = \small]
+        \draw (0,0) rectangle (4,0.5);
+        \draw (4,0) rectangle (8,0.5);
+        \node (begin) at (5,-1) {起点指示器};
+        \node (search) at (7,-1) {搜索指示器};
+        \draw [-Stealth] (begin) -- (5,0);
+        \draw [-Stealth] (search) -- (7,0);
+    \end{tikzpicture}
+    \caption{扫描缓冲区}
+    \label{扫描缓冲区}
+\end{figure}
+假定每半区可容120个字符，而这两个半区又是互补使用的。如果收缩指示器从单词起点出发搜索到半区得边缘但尚未到达单词得终点，那么就应调用预处理程序，令其把后续的120个输入字符装进另半区。我们认定，在搜索指示器对另半区进行扫描得时期内，线性单词得终点必能够达到。这意味着对标识符和常数得长度实际上必须加以限制(例如不多于120字符)。
+
+\subsubsection{单词符号得识别：超前搜索}
+
+词法分析器得结构如图\ref{词法分析器}所示，当词法分析器调用预处理子程序处理出一串输入字符放进扫描缓冲区之后，分析器就从此缓冲器中逐一识别单词符号。当缓冲区里得字符串被处理完之后，他又调用预处理程序装入新串。
+
+下面介绍单词符号识别的一个简单方法 —— 超前搜索。
+
+\textbf{关键字的识别}\footnote{书P39-40有一个FORTRAN语言的例子}
+
+在一些关键字不加以保护(用户可以将关键字用作普通标识符)的语言中，为了识别关键字，我们必须超前扫描多个字符，超前到能够确定词性的地方为止。
+
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font = \small,thick]
+        \begin{scope}[inner xsep = 3ex,inner ysep=1ex,text width=3em]
+            \node[draw] (process) at (0,0) {预处理子程序};
+            \node[draw] (scanner) at (0,-2) {扫描器};
+            \node[draw,text width = 5em] (scanner-buffer) at (5,-1) {扫描缓冲区};
+            \node[draw,text width = 5em,inner ysep = 3ex] (input-buffer) at (5,1) {输入缓冲区};
+            \node[draw,text width=2em] (list) at (9,1) {列表};
+        \end{scope}
+        \node[draw,ellipse] (input) at (5,3) {输入};
+        \begin{scope}[-Stealth,dashed]
+            \draw (input) -- (input-buffer);
+            \draw (input-buffer) -- (list);
+            \draw (input-buffer.west) ++(0,-0.6) -- ++ (-2.2,0);
+            \draw (process) -| (scanner-buffer);
+            \draw (scanner-buffer) |- (scanner);
+        \end{scope}
+        \begin{scope}[-Stealth]
+            \draw (process.north) ++ (0,1) -- ++ (0,-1);
+            \draw (process.south) ++ (-0.5,0) -- ++ (0,-1);
+            \draw (scanner.north) ++ (+0.5,0) -- ++ (0,1);
+            \draw (scanner.south) -- ++ (0,-1) node[left,pos=0.5] {单词符号};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{词法分析器}
+    \label{词法分析器}
+\end{figure}
+
+\textbf{标识符的识别}
+
+多数语言的标识符时字母开头的``字母/数字''串，而且在程序中标识符的出现都后跟着算符或界符，因此识别标识符大多没有困难。
+
+\textbf{常数的识别}
+
+多数语言算术常数的表示大体相似，对它们的识别也是很直接的。但对于某些语言的常数的识别也需要超前搜索的方法。
+
+逻辑(或布尔)常数和用引用括起来的字符串常数都很容易识别。但 FORTRAN 有需格外处理。
+
+\textbf{算符和界符的识别}
+
+词法分析器应将那些由多个字符复合成的算符和界符拼合成一个单词符号。因为这些字符串是不可分的整体，在这里同样需要超前搜索。
+
+\subsubsection{状态转换图}
+
+状态转换图是设计词法分析程序的一种好途径。转换图是一张有限方向图。在状态转换图中，结点代表状态，用圆圈表示。状态之间用箭弧连结。箭弧上的标记(字符)代表在射出结点状态下可能出现的输入字符或字符类。
+
+\begin{figure}[H]
+    \centering
+    \subfigure[]{
+        \begin{minipage}{0.3\linewidth}
+            \centering
+            \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+                \node[draw] (1) at (0,0) {1};
+                \node[draw] (2) at (3,0) {2};
+                \node[draw] (3) at (3,-1.5) {3};
+                \draw (1) -- (2) node [pos=0.5,above] {X};
+                \draw (1) to[out = 270,in = 180] node [pos=0.5,above] {Y} (3);
+            \end{tikzpicture}
+        \end{minipage}
+    }
+    \subfigure[]{
+        \begin{minipage}{0.3\linewidth}
+            \centering
+            \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+                \node[draw] (0) at (0,0) {0};
+                \node[draw] (1) at (2,0) {1};
+                \node[draw,double,pin={[pin distance = -7,pin edge={line width=0,color=white}]45:*}] (2) at (4,0) {2};
+                \draw (0) -- (1) node[above=-8pt,pos=0.5] {字母};
+                \draw (1) -- (2) node[above=-8pt,pos=0.5] {其它};
+                \draw (1) ..controls +(0.5,1.2) and + (-0.5,1.2).. (1) node [above = -0.7cm,pos=0.5] {字母或数字};
+            \end{tikzpicture}
+        \end{minipage}
+
+    }
+    \subfigure[]{
+        \begin{minipage}{0.3\linewidth}
+            \centering
+            \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+                \node[draw] (0) at (0,0) {0};
+                \node[draw] (1) at (2,0) {1};
+                \node[draw,double,pin={[pin distance = -7,pin edge={line width=0,color=white}]45:*}] (2) at (4,0) {2};
+                \draw (0) -- (1) node[above=-8pt,pos=0.5] {数字};
+                \draw (1) -- (2) node[above=-8pt,pos=0.5] {其它};
+                \draw (1) ..controls +(0.5,1.2) and + (-0.5,1.2).. (1) node [above = -0.2cm, pos=0.5] {数字};
+            \end{tikzpicture}
+        \end{minipage}
+    }
+    \caption{状态转换图}
+    \label{fig:状态转换图}
+\end{figure}
+
+例如在 \ref{fig:状态转换图}(a)表示：在状态1下，若输入字符为 X，则读进 X，并转换到状态2.若输入字符为 Y，则读 Y，转换到状态3。
+
+一张在转换图只包含有限个状态(即有限个结点)，其中有一个被认为是初态，而且实际上至少要有一个终态(双圈表示)。
+
+一个状态转换图可用于识别(或接受)一定的字符串。例如，识别标识符的转换图 \ref{fig:状态转换图}(b)。终态结上打个星号*意味着多读进了一个不属于标识符部分的字符，应把它退还给输入串\footnote{书P42-44有一个完整的简单语言进行词法分析绘制状态转换图的例子}。
+
+\subsubsection{状态转换图的实现}
+
+转换图容易用程序实现。最简单的办法是让每个状态结点对应一小段程序。下面引用一组全局变量和过程，将它们作为实现转换图的基本成分：
+
+\begin{enumerate}
+    \item ch \\
+    字符变量，存放最新读进的源程序字符。
+    \item strToken \\
+    字符数组，存放构成单词符号的字符串。
+    \item  GetChar \\
+    子程序过程，将下一输入字符读到 ch 中，搜索指示器前移以字符位置。
+    \item GetBC \\
+    子程序过程，检查 ch 中的字符串是否为空白。若是，则调用 GetChar 直至 ch 中进入一个非空白字符。
+    \item Concat \\
+    子程序过程，将 ch 中的字符串连接到 strToken 之后。
+    \item IsLetter 和 IsDigit \\
+    布尔函数过程，它们分别判断ch中的字符是否为字母和数字。
+    \item Reverse \\
+    整型函数过程，对 strToken 中的字符串查找保留字表，若它是一个保留字则返回编码，否则返回0。
+    \item Retract \\
+    子程序过程，将搜索指示器回调一个字符位置，将 ch 置为空白字符。
+    \item InsertId \\
+    整型函数过程，将strToken中的标识符插入符号表，返回符号表指证。
+    \item InsertConst \\
+    整型函数过程，将 strToken 中的常数插入常数表，返回常数表指针。
+\end{enumerate}
+
+对于不含回路的分叉结点来说，可让它对应一个 switch 语句或一组 if...else...then 语句，如图\ref{fig:不含回路与含有回路的转换图}(a)；对于含回路的状态结点来说，可让它对应一个由 while 语句或 if 语句构成的程序段，如图\ref{fig:不含回路与含有回路的转换图}(b)。
+
+\begin{figure}[H]
+    \centering
+    \subfigure[]{
+        \begin{minipage}{0.3\linewidth}
+            \centering
+            \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+                \node[draw] (i) at (0,0) {i};
+                \node[draw] (j) at (3,1.5) {j};
+                \node[draw] (k) at (3,0) {k};
+                \node[draw] (l) at (3,-1.5) {l};
+                \draw (i) to[out=90,in=180] node[pos=0.7,above=-5pt] {字母} (j);
+                \draw (i) to node[pos=0.6,above=-5pt] {数字} (k);
+                \draw (i) to[out=270,in=180] node[pos=0.7,above=-5pt] {/} (l);
+            \end{tikzpicture}
+        \end{minipage}
+    }
+    \subfigure[]{
+        \begin{minipage}{0.3\linewidth}
+            \centering
+            \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+                \node[draw] (i) at (0,0) {i};
+                \node[draw] (j) at (3,0) {j};
+                \draw (i) ..controls +(0.5,1.2) and + (-0.5,1.2).. node [above=-0.7cm]{字母或数字} (i);
+                \draw (i) -- (j) node [pos=0.5,above=-0.2cm] {其他};
+            \end{tikzpicture}
+        \end{minipage}
+    }
+    \caption{不含回路与含有回路的转换图}
+    \label{fig:不含回路与含有回路的转换图}
+\end{figure}
+
+\subsection{正则表达式与有限自动机}
+\subsubsection{正规式与正规集}
+
+对于字母表 $\Sigma$，我们感兴趣的是它们的一些特殊字集，即所谓正规集。我们将使用正规式这个概念来表示正规集。下面是正规式和正规集的递归定义。
+
+\begin{itemize}
+    \item $\epsilon$ 和 $\phi$ 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别是 \{$\epsilon$\} 和 $\phi$。
+    \item 任何 $a\in\Sigma$，$a$是$\Sigma$上的一个正规式，它所表示的正规集为 \{$a$\}。
+    \item 假定 U 和 V 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别记为 L(U) 和 L(V)，那么(U|V),(U·V),(U)$^{*}$也都是正规式。它们所表示的正规集分别为：$L(U)\cup L(V),L(U) L(V)$连续积,$(L(U))^{*}$(闭包)。
+\end{itemize}
+
+仅由有限次使用上述三步骤而得到的表达式才是 $\Sigma$ 上的正规式。仅由这些正规式所表示的字集才是 $\Sigma$ 上的正规集。
+
+正规式的运算符 ``|'' 读作``或''，``·''读作``连接''，``$^{*}$''读作``闭包''。规定运算符优先级如下：$^{*} \rightarrow \text{·} \rightarrow |$。连接符 ``·'' 可省略不写\footnote{书 P47 有几个正规集例子}。 
+
+若两个正规式所表示的正规集相同，则认为二者等价。两个等价的正规式 U，V 记为 U = V。如果 U,V,W 均为正规式，由以下关系成立：
+
+\begin{itemize}
+    \item U|V=V|U \hfill (交换律)
+    \item U|(V|W) = (U|V)|W \hfill (结合律)
+    \item U(VW) = (UV)W \hfill (结合律)
+    \item U(V|W) = UV|UW \quad (V|W)U = VU|WU  \hfill (分配律)
+    \item $\epsilon$U = U$\epsilon$ = U
+\end{itemize}
+
+\subsubsection{确定有限自动机(DFA)}
+
+一个确定有限自动机(DFA)M是一个五元式:
+\[ M = (S,\Sigma,\delta,s_0,F) \]
+
+\begin{itemize}
+    \item $S$: 一个有限集，它的每个元素称为一个状态。
+    \item $\Sigma$: 一个有穷字母表，每个元素称为一个输入字符。
+    \item $\delta$: 一个从 $S \times \Sigma$ 到 $S$ 的单值部分映射。$\delta(s,a)=s^{'}$ 表示：当前状态为 $s$,输入字符为 $a$,将转换到下一状态 $s^{'}$。称$s^{'}$为$s$的后继状态。
+    \item $s_0\in S$: 唯一初态。
+    \item $F\subseteq S$: 终态集(可空)。
+\end{itemize}
+
+显然，一个 DFA 可用一个矩阵表示，该矩阵的行表示状态，列表示输入字符，矩阵元素表示 $\delta(s,a)$ 的值。这个矩阵称为状态转换矩阵。例如如下 DFA：
+\[ M = (\{0,1,2,3\},\{a,b\},\delta,0,\{3\}) \]
+其中，$\delta$为：
+
+\begin{equation}
+    \begin{aligned}
+        \delta(0,a) = 1 \qquad \delta(0,b) = 2 \\ 
+        \delta(1,a) = 3 \qquad \delta(1,b) = 2 \\ 
+        \delta(2,a) = 1 \qquad \delta(2,b) = 3 \\ 
+        \delta(3,a) = 3 \qquad \delta(3,b) = 3 \nonumber
+    \end{aligned}
+\end{equation}
+
+他所对应的状态转换矩阵为：
+\begin{table}[H]
+    \centering
+    \caption{状态转换矩阵}
+    \label{table:状态转换矩阵}
+    \setlength{\tabcolsep}{15mm}
+    \begin{tabular}{c|ccc}
+        \toprule
+        \textbf{状态} & \textbf{a} & \textbf{b}\\
+        \midrule
+        0 & 1 & 2 \\
+        1 & 3 & 2 \\
+        2 & 1 & 3 \\
+        3 & 3 & 3 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+一个 DFA 也可表示成一张(确定的)状态转换图。假定 DFA M 含有 m 个状态和 n 个输入字符，那么，这个图含有m个状态结点，每个结点顶多有n条箭弧射出和别的结点相连接，每条监护用 $\Sigma$ 中的一个不同输入字符作为标记，整张图含有为一个一个初态结点和若干个(可以是0个)终态结点。
+
+对于 $\Sigma^*$ 中的任何字 $\alpha$，若存在一条从初始结点到终态结点的通路，且这条通路上所有弧的标记符连接成的字等于 $\alpha$，则称 $\alpha$ 可为 DFA M 所识别(读出或接受)。若 M 的初态结点同时又是终态结点，则空字 $\epsilon$ 可为 M 所识别(接受)。DFA M 所能识别的字的全体记为 L(M)。
+
+例如上面例子对应的状态转换图：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \node[draw] (0) at (0,0) {0};
+        \node[draw] (1) at (2.5,1.5) {1};
+        \node[draw] (2) at (2.5,-1.5) {2};
+        \node[draw,double] (3) at (5,0) {3};
+        \draw (0) to[out=60,in=180] node[above] {a} (1);
+        \draw (0) to[out=-60,in=180] node[below] {b} (2);
+        \draw (1) to[out=240,in=120] node[left] {b} (2);
+        \draw (2) to[out=60,in=-60] node[right] {a} (1);
+        \draw (1) to[out=0,in = 120] node[above] {a} (3);
+        \draw (2) to[out=0,in = 240] node[below] {b} (3);
+        \draw (3) ..controls +(1,-0.5) and +(1,0.5) .. (3) node [right=0.8cm] {a,b};
+    \end{tikzpicture}
+    \caption{状态转换图}
+    \label{fig:状态转换图}
+\end{figure}
+
+如果 DFA M 的输入字母表为 $\Sigma$，则我们也称 M 是 $\Sigma$ 上的一个 DFA。可以证明：$\Sigma$ 上的一个字集 $V \subseteq \Sigma^*$ 是正规的，当且仅当存在 $\Sigma$ 上的 DFA M，使得 V=L(M)。
+
+DFA 的确定性表现在映射 $\delta:S\times \Sigma \rightarrow S$ 是一个单值函数。也就是说，对任何状态 $s\in S$ 和输入符号 $a\in \Sigma$，$\delta(s,a)$ 唯一地确定了下一状态。如果允许 $\delta$ 是一个多值函数\footnote{一个 x 对应多个 y}，就得到了非确定的自动机。
+
+\subsubsection{非确定的有限自动机(NFA)}
+
+一个非确定有限自动机(NFA)M是一个五元式:
+\[ M = (S,\Sigma,\delta,s_0,F) \]
+
+\begin{itemize}
+    \item $S,\Sigma,F$ 意义与 NFA 相同。
+    \item $S_0 \subseteq S$: 一个非空初态集。
+    \item $\delta$: 一个从 $S \times \Sigma^*$ 到 S 的子集映照。即 $\delta:S\times \Sigma^* \rightarrow 2^S$。
+\end{itemize}
+
+显然，一个含有 m 个状态和 n 个输入字符的 NFA 可以表示成如下状态转换图：该图含有 m 个状态结点，每个结点可射出若干条箭弧与别的结点相连，每条弧用 $\Sigma^*$ 中的一个字(不一定要不同的字而且可以是空字)做标记(称为输入字)，整张图至少含有一个初态结点以及若干个(可以是0个)终态结点。某些结点既可以是初态结点也可以是终态结点。
+
+对于 $\Sigma^*$ 中的任何字 $\alpha$，若存在一条从某一初态结点到某一终态结点的通路，且这条通路上所有弧的标记符连接成的字(忽略标记为空的弧)等于 $\alpha$，则称 $\alpha$ 可为 NFA M 所识别(读出或接受)。若 M 的某些结点既是初态结点又是终态结点，或者存在一条从某个初态结点到某个终态结点的 $\epsilon$ 通路，则空字 $\epsilon$ 可为 M 所识别(接受)。
+
+例如下图\footnote{书上原图有误，1 $\rightarrow$ 4} NFA 所能识别的是所有含有相继两个 a 或相继两个 b 的字。
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \node[draw] (x) at (0,0) {X};
+        \node[draw] (5) at (2,0) {5};
+        \node[draw] (1) at (4,0) {1};
+        \node[draw] (2) at (6,0) {2};
+        \node[draw] (6) at (8,0) {6};
+        \node[draw,double] (y) at (10,0) {Y};
+        \node[draw] (3) at (5,1) {3};
+        \node[draw] (4) at (5,-1) {4};
+        \draw (x) -- (5) node[above,pos=0.5] {$\epsilon$};
+        \draw (5) -- (1) node[above,pos=0.5] {$\epsilon$};
+        \draw (1) -- (3) node[above,pos=0.5] {a};
+        \draw (3) -- (2) node[above,pos=0.5] {a};
+        \draw (1) -- (4) node[below,pos=0.5] {b};
+        \draw (4) -- (2) node[below,pos=0.5] {b};
+        \draw (2) -- (6) node[above,pos=0.5] {$\epsilon$};
+        \draw (6) -- (y) node[above,pos=0.5] {$\epsilon$};
+        \draw (5) ..controls +(0.5,1) and +(-0.5,1) .. (5) node[pos=0.5,above] {a};
+        \draw (6) ..controls +(0.5,1) and +(-0.5,1) .. (6) node[pos=0.5,above] {a};
+        \draw (5) ..controls +(-0.5,-1) and +(0.5,-1) .. (5) node[pos=0.5,below] {b};
+        \draw (6) ..controls +(-0.5,-1) and +(0.5,-1) .. (6) node[pos=0.5,below] {b};
+    \end{tikzpicture}
+    \caption{非确定有限自动机}
+    \label{fig:非确定有限自动机}
+\end{figure}
+
+显然，DFA 是 NFA 的特例。但是，对于每个 NFA M 存在一个 DFA $\text{M}^{''}$,使得 L(M) = L(M$^{''}$)\footnote{证明过程见书 P49-50}。
+
+将 NFA 状态转换图转换为 DFA 状态转换图时有以下替换规则：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}
+            \node[draw] (i1) at (0,0) {i};
+            \node[draw] (j1) at (2,0) {j};
+            \draw (i1) -- (j1) node [pos=0.5,above=-3pt] {AB};
+            \node at (4,0) {代之以};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (k2) at (8,0) {k};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) -- (k2) node [pos=0.5,above=-1pt] {A};
+            \draw (k2) -- (j2) node [pos=0.5,above=-1pt] {B};
+        \end{scope}
+        \begin{scope}[yshift = -1.5cm]
+            \node[draw] (i1) at (0,0) {i};
+            \node[draw] (j1) at (2,0) {j};
+            \draw (i1) -- (j1) node [pos=0.5,above=-3pt] {A/B};
+            \node at (4,0) {代之以};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) to[out = 30,in=150] node [pos=0.5,below=-1pt] {A} (j2);
+            \draw (i2) to[out=-30,in=-150] node [pos=0.5,above=-1pt] {B} (j2);
+        \end{scope}
+        \begin{scope}[yshift=-3cm]
+            \node[draw] (i1) at (0,0) {i};
+            \node[draw] (j1) at (2,0) {j};
+            \draw (i1) -- (j1) node [pos=0.5,above=-3pt] {A*};
+            \node at (4,0) {代之以};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (k2) at (8,0) {k};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) -- (k2) node [pos=0.5,above=-1pt] {$\epsilon$};
+            \draw (k2) -- (j2) node [pos=0.5,above=-1pt] {$\epsilon$};
+            \draw (k2) ..controls +(-0.5,-1) and +(0.5,-1).. (k2) node[pos=0.5,below] {A};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{替换规则}
+    \label{fig:替换规则}
+\end{figure}
+
+正规式 $(a|b)^{*}(aa|bb)(a|b)^{*}$ 对应的 NFA 如图 \ref{fig:非确定有限自动机} 所示，对应的状态转换矩阵如下：
+
+\begin{table}[H]
+    \centering
+    \caption{正规式的状态转换矩阵}
+    \label{table:正规式的状态转换矩阵}
+    \setlength{\tabcolsep}{5mm}
+    \begin{tabular}{l|ll}
+        \toprule
+        \textbf{$I$} & \textbf{$I_a$} & \textbf{$I_b$} \\
+        \midrule
+        \{X，5，1\} & \{5，3，1\} & \{5，4，1\} \\
+        \{5，3，1\} & \{5，3，1，2，6，Y\} & \{5，4，1\} \\
+        \{5，4，1\} & \{5，3，1\} & \{5，4，1，2，6，Y\} \\
+        \{5，3，1，2，6，Y\} & \{5，3，1，2，6，Y\} & \{5，4，1，6，Y\} \\
+        \{5，4，1，6，Y\} & \{5，3，1，6，Y\} & \{5，4，1，2，6，Y\} \\
+        \{5，4，1，2，6，Y\} & \{5，3，1，6，Y\} & \{5，4，1，2，6，Y\} \\
+        \{5，3，1，6，Y\} & \{5，3，1，2，6，Y\} & \{5，4，1，6，Y\} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+对上表中的所有状态子集重新命名，得到如下状态转换矩阵。
+
+\begin{table}[H]
+    \centering
+    \caption{重命名的状态转换矩阵}
+    \label{table:重命名的状态转换矩阵}
+    \setlength{\tabcolsep}{15mm}
+    \begin{tabular}{l|ll}
+        \toprule
+        \textbf{s} & \textbf{a} & \textbf{b} \\
+        \midrule
+        0 & 1 & 2 \\
+        1 & 3 & 2 \\
+        2 & 1 & 5 \\
+        3 & 3 & 4 \\
+        4 & 6 & 5 \\
+        5 & 6 & 5 \\
+        6 & 3 & 4 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+与上表相对应的状态转化图如下所示，显然这和图\ref{fig:非确定有限自动机}是等价的。
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \node[draw] (0) at (0,0) {0};
+        \node[draw] (1) at (2,1.5) {1};
+        \node[draw] (2) at (2,-1.5) {2};
+        \node[draw,double] (3) at (4,1.5) {3};
+        \node[draw,double] (5) at (4,-1.5) {5};
+        \node[draw,double] (4) at (7,1.5) {4};
+        \node[draw,double] (6) at (7,-1.5) {6};
+        \draw (0) to [out=90,in=180] node[above,pos=0.5] {a} (1);
+        \draw (0) to [out=270,in=180] node[above,pos=0.5] {b} (2);
+        \draw (1) to [out=0,in=180] node[above,pos=0.5] {a} (3);
+        \draw (3) to [out=0,in=180] node[above,pos=0.5] {b} (4);
+        \draw (2) to [out=0,in=180] node[above,pos=0.5] {b} (5);
+        \draw (5) to [out=0,in=180] node[above,pos=0.5] {a} (6);
+        \draw (1) to [out=240,in=120] node[left,pos=0.5] {b} (2);
+        \draw (2) to [out=60,in=300] node[right,pos=0.5] {a} (1);
+        \draw (6) to [out=30,in=330] node[right,pos=0.5] {b} (4);
+        \draw (4) to [out=300,in=60] node[left,pos=0.5] {a} (6);
+        \draw (4) to [out=240,in=30] node[above,pos=0.7] {b} (5);
+        \draw (6) to [out=120,in=330] node[below,pos=0.7] {a} (3);
+        \draw (3) ..controls +(0.5,1) and +(-0.5,1).. (3) node [pos=0.5,above] {a};
+        \draw (5) ..controls +(0.5,-1) and +(-0.5,-1).. (5) node [pos=0.5,below] {b};
+    \end{tikzpicture}
+    \caption{未化简的 DFA}
+    \label{fig:未化简的 DFA}
+\end{figure}
+
+\subsubsection{正规文法与有限自动机的等价性}
+
+对于正规文法 G 和有限自动机 M，如果 L(G) = L(M)，则称 G 和 M 是等价的。并有以下结论\footnote{证明见书 P51-52。}：
+\begin{itemize}
+    \item 对每一个右线性正规文法G或左线性正规文法G，都存在一个有限自动机(FA)M，使得 L(M) = L(G)。
+    \item 对每一个 FA M，都存在一个右线性文法 $\text{G}_R$ 和左线性文法 $\text{G}_L$，使得 L(M) = L($\text{G}_R$) = L($\text{G}_L$)。 
+\end{itemize}
+
+\subsubsection{正规式有限自动机的等价性}
+
+有以下两个结论\footnote{证明见书 P53-56。}：
+\begin{itemize}
+    \item 对任何 FA,M 都存在一个正规式 r, 使得 L(r)=L(M)。
+    \item 对任何正规式 r,都存在一个 FA M, 使得 L(M)=L(r)。
+\end{itemize}
+
+\subsubsection{确定有限自动机的化简}
+
+一个确定有限自动机 M 的化简指的是：寻找一个状态数比 M 少的 DFA M$^{'}$，使得 L(M) = L(M$^{'}$)。
+
+假定 s 和 t 是 M 的两个不同状态，我们称 s 和 t 是等价的：如果从状态 s 出发能读出某个字 w 而停于终态，那么同样，从 t 出发也能读出同样的字 w 而停于终态；反之，若从 t 出发能读出某个字 w 而停于终态，则从 s 出发也能读出同样的 w 而停于终态。
+
+如果 DFA M 的两个状态 s 和 t 不等价，则称这两个状态是可区别的。例如，终态与非终态是可区别的。因为，终态能读出空字 $\epsilon$，非终态则不能。
+
+一个 DFA M 的状态最少化过程旨在将 M 的状态集分割成一些不相交的子集，使得任何不同的两子集中的状态都是可区别的，而同一子集中的任何两个状态都是等价的。最后，在每个子集中选出一个代表，同时消去其他等价状态。
+
+
+\newpage
