@@ -31,6 +31,15 @@
 
 按照语法分析树的建立方法，可以将语法分析办法分成两类，即自上而下分析发法和自下而上分析法。
 
+\noindent\textbf{最左推导\footnote{这部分书上没有仔细讲，这里简单说一下，仅供参考。}}
+
+最左推导，即再推导过程中，总是选择每个句型的最左非终结符进行替换。与之对应的逆过程称为最右归约。相对的也有最右推导和最左归约。
+
+在自顶向下分析中，采用的是最左推导与最右归约。
+
+
+
+
 \subsection{自上而下分析面临的问题}
 
 自上而下语法分析，顾名思义，就是从文法的开始符号出发，向下推导，推出句子。自上而下推导的主旨是：对任何输入串，试图用一切可能的办法，从文法开始符号(根结)出发，自上而下地为输入串建立一棵语法树。或者说，为输入串寻找一个最左推导。
@@ -118,9 +127,9 @@
 这种自上而下分析法存在许多困难和缺点。
 \begin{itemize}
     \item \textit{文法左递归} \\
-    一个文法是含有左递归的，如果存在非终结符 P，且存在如下表达式：
+    左递归:存在非终结符 P，有如下表达式：
     \[P \stackrel{+}{\Rightarrow} P \alpha \]
-    那么，含有左递归的文法将使上述的分析过程陷入无限循环。因此，使用自上而下分析法必须消除文法的左递归。
+    含有左递归的文法将使上述的分析过程陷入无限循环。因此，使用自上而下分析法必须消除文法的左递归。
     \item \textit{回溯} \\
     如果走了一大段错路，就必须抛弃所有的工作(中间代码，表格记录)重来，浪费时间。因此，最好应该设法消除回溯。
     \item \textit{虚假匹配} \\
@@ -137,7 +146,7 @@
 
 \subsubsection{左递归的消除}
 
-假定关于非终结符 P 的规则为：
+假定关于非终结符 P 的规则为\footnote{这里有很好的解释：\url{https://www.bilibili.com/video/BV1zW411t7YE?p=20}}：
 \[ P \rightarrow P\alpha|\beta \]
 其中，$\beta$ 不以 P 开头，那么，我们可以把 P 的规则改写为如下的非直接左递归形式：
 \begin{equation}
@@ -238,5 +247,19 @@
     \end{itemize}
 \end{itemize}
 
+\noindent\textbf{FIRST 集的计算方法}
+
+FIRST(X) 的定义：
+\begin{itemize}
+    \item 可以从 X 推导出的所有串首终结符\footnote{串首第一个符号，并且是终结符。}构成的集合。
+    \item 如果 X $\stackrel{*}{\Rightarrow} \epsilon$，那么 $\epsilon \in$ FIRST(X)。 
+\end{itemize}
+
+FIRST(X) 算法：不断应用下列规则，直到没有新的终结符或$\epsilon$可以被加入到任何 FIRST 集合中为止。
+\begin{itemize}
+    \item 如果 X 是一个终结符，那么 FIRST(X) = X。
+    \item 如果 X 是一个非终结符，有 X $\rightarrow Y_1 \cdots Y_k \in P (k\geq 1) $，那么如果对于某个 $i$，a 在 FIRST($Y_i$) 中，且 $Y_i$ 前的所有非终结符的 FIRST 集中都存在 $\epsilon$。就把 a 加入到 FIRST(X) 中。如果所有 $Y_i$ 的 FIRST 集中都有 $\epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
+    \item 如果 X$\rightarrow \epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
+\end{itemize}
 
 \newpage

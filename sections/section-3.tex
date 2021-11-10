@@ -5,11 +5,11 @@
 词法分析器的功能是输入源程序，输出单词符号。程序语言的单词符号一般可分为下列五种。
 
 \begin{enumerate}
-    \item \textbf{关键字}：由程序语言定义的具有固定意义的标识符。有时被称为保留字或基本字。例如 begin,if,while......这些字通常不用作一般标识符。
-    \item \textbf{标识符}：用来表示各种名字，如变量名，数组名，过程名等。
-    \item \textbf{常数}：一般用整型，实型，布尔型等等
-    \item \textbf{运算符}：如 +，-，*，/ 等
-    \item \textbf{界符}：如逗号，括号，分号，注释符等
+    \item \textbf{\textcolor{mark}{关键字}}：由程序语言定义的具有固定意义的标识符。有时被称为保留字或基本字。例如 begin,if,while......这些字通常不用作一般标识符。
+    \item \textbf{\textcolor{mark}{标识符}}：用来表示各种名字，如变量名，数组名，过程名等。
+    \item \textbf{\textcolor{mark}{常数}}：一般用整型，实型，布尔型等等
+    \item \textbf{\textcolor{mark}{运算符}}：如 +，-，*，/ 等
+    \item \textbf{\textcolor{mark}{界符}}：如逗号，括号，分号，注释符等
 \end{enumerate}
 
 词法分析器所输出的单词符号常常表示为以下二元式：
@@ -52,15 +52,15 @@
 
 词法分析器工作的第一步是输入源程序文本。输入串一般是放在一个缓冲区中，称为输入缓冲区。词法分析器的工作(单词符号的识别)可以直接在这个缓冲区中进行。在多数情况下，会对输入串进行预处理。
 
-对于许多程序语言来说，空白符，跳格符，回车符，换行符等编辑性字符除了在文字常数中之外，在别处的任何出现都没有意义，而注解部分几乎允许出现在程序中的任何地方。它们不是程序语言的必要组成部分，它们存在的意义仅是提高程序的易读性和易理解性。对于它们，预处理可以将其剔掉。
+\textcolor{tip}{对于许多程序语言来说，空白符，跳格符，回车符，换行符等编辑性字符除了在文字常数中之外，在别处的任何出现都没有意义}，而注解部分几乎允许出现在程序中的任何地方。它们不是程序语言的必要组成部分，它们存在的意义仅是提高程序的易读性和易理解性。对于它们，\textcolor{tip}{预处理可以将其剔掉}。
 
-有些语言将空白符(一个或数个)用作单词符号之间的间隔，即界符。这种情况下，预处理时可把相继的若干个空白结合成一个。
+有些语言将空白符(一个或数个)用作单词符号之间的间隔，即界符。这种情况下，预处理时可\textcolor{tip}{把相继的若干个空白结合成一个}。
 
 我们可以设想构造一个预处理子程序，它能够完成上面所述的任务。每当词法分析器调用它时，它就处理出一窜确定长度的输入自读，并将其装进词法分析器所指定的缓冲区中(扫描缓冲区)。这样分析器就可以在此缓冲区中直接进行单词符号的识别，而不必照管其他繁琐事务。
 
 分析器对扫描缓冲区进行扫描时一般用两个指示器，一个指向当前正在识别的单词的开始位置(新单词首字符)，另一个用于向前搜索以寻找单词的终点。
 
-无论扫描缓冲区设得多大都不能保证单词符号不会被它的边界所打断。因此，扫描缓冲区最好的使用一个如下所示得一分为二得区域。
+无论扫描缓冲区设得多大都不能保证单词符号不会被它的边界所打断。因此，扫描缓冲区最好的使用一个如下所示的一分为二的区域。
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[font = \small]
@@ -78,7 +78,7 @@
 
 \subsubsection{单词符号得识别：超前搜索}
 
-词法分析器得结构如图\ref{词法分析器}所示，当词法分析器调用预处理子程序处理出一串输入字符放进扫描缓冲区之后，分析器就从此缓冲器中逐一识别单词符号。当缓冲区里得字符串被处理完之后，他又调用预处理程序装入新串。
+词法分析器得结构如图\ref{词法分析器}所示，当词法分析器调用预处理子程序处理出一串输入字符放进扫描缓冲区之后，分析器就从此缓冲器中逐一识别单词符号。当缓冲区里的字符串被处理完之后，他又调用预处理程序装入新串。
 
 下面介绍单词符号识别的一个简单方法 —— 超前搜索。
 
@@ -132,7 +132,7 @@
 
 \subsubsection{状态转换图}
 
-状态转换图是设计词法分析程序的一种好途径。转换图是一张有限方向图。在状态转换图中，结点代表状态，用圆圈表示。状态之间用箭弧连结。箭弧上的标记(字符)代表在射出结点状态下可能出现的输入字符或字符类。
+状态转换图是设计词法分析程序的一种好途径。转换图是一张有限方向图。\textcolor{tip}{在状态转换图中，结点代表状态，用圆圈表示。状态之间用箭弧连结。箭弧上的标记(字符)代表在射出结点状态下可能出现的输入字符或字符类。}
 
 \begin{figure}[H]
     \centering
@@ -181,9 +181,9 @@
 
 例如在 \ref{fig:状态转换图}(a)表示：在状态1下，若输入字符为 X，则读进 X，并转换到状态2.若输入字符为 Y，则读 Y，转换到状态3。
 
-一张在转换图只包含有限个状态(即有限个结点)，其中有一个被认为是初态，而且实际上至少要有一个终态(双圈表示)。
+一张在转换图只包含\textcolor{tip}{有限个状态(即有限个结点)，其中有一个被认为是初态，而且实际上至少要有一个终态(双圈表示)。}
 
-一个状态转换图可用于识别(或接受)一定的字符串。例如，识别标识符的转换图 \ref{fig:状态转换图}(b)。终态结上打个星号*意味着多读进了一个不属于标识符部分的字符，应把它退还给输入串\footnote{书P42-44有一个完整的简单语言进行词法分析绘制状态转换图的例子}。
+一个状态转换图可用于识别(或接受)一定的字符串。例如，识别标识符的转换图 \ref{fig:状态转换图}(b)。\textcolor{tip}{终态结上打个星号*意味着多读进了一个不属于标识符部分的字符，应把它退还给输入串\footnote{书P42-44有一个完整的简单语言进行词法分析绘制状态转换图的例子}。}
 
 \subsubsection{状态转换图的实现}
 
@@ -246,31 +246,43 @@
 \end{figure}
 
 \subsection{正则表达式与有限自动机}
-\subsubsection{正规式与正规集}
+\subsubsection{\textcolor{imp}{正规式与正规集}}
 
-对于字母表 $\Sigma$，我们感兴趣的是它们的一些特殊字集，即所谓正规集。我们将使用正规式这个概念来表示正规集。下面是正规式和正规集的递归定义。
+对于字母表 $\Sigma$，我们感兴趣的是它们的一些特殊字集，即所谓正规集。我们将使用正规式\footnote{更常用的叫法为正则表达式(Regular Expression)，简称RE，关于使用 RE 匹配字符串的方法可以参考我的另一篇笔记：\url{https://github.com/Pionpill/Notebook/blob/Pionpill/related/RegEx/syntax.md}}这个概念来表示正规集。
+
+可以将正则式理解为一种表示字符串(句子)的语法，而正则集表示利用该语法所能表示的所有字符串的集合。例如正则式 A = (a|b)c 表示以 a或b 开头，c结尾的字符串，而这种字符串有两个 ac 和 bc，其对应的正则集为  L(A) = \{ac,bc\}。\footnote{由于上面的形式化语言不好理解，这段为本人自己给出的解释，仅供参考。}
+
+下面是正规式和正规集的递归定义。
 
 \begin{itemize}
-    \item $\epsilon$ 和 $\phi$ 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别是 \{$\epsilon$\} 和 $\phi$。
-    \item 任何 $a\in\Sigma$，$a$是$\Sigma$上的一个正规式，它所表示的正规集为 \{$a$\}。
-    \item 假定 U 和 V 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别记为 L(U) 和 L(V)，那么(U|V),(U·V),(U)$^{*}$也都是正规式。它们所表示的正规集分别为：$L(U)\cup L(V),L(U) L(V)$连续积,$(L(U))^{*}$(闭包)。
+    \item \textit{特殊字符串都是正规式} \\
+    $\epsilon$ 和 $\phi$ 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别是 \{$\epsilon$\} 和 $\phi$。
+    \item \textit{单个字符串是正规式 }\\
+    任何 $a\in\Sigma$，$a$是$\Sigma$上的一个正规式，它所表示的正规集为 \{$a$\}。
+    \item \textit{正规式运算法则}\\
+    假定 U 和 V 都是 $\Sigma$ 上的正规式，它们所表示的正规集分别记为 $L(U)$ 和 $L(V)$，那么$(U|V),(U \cdot V),(U)^{*}$也都是正规式。它们所表示的正规集分别为：$L(U)\cup L(V),L(U) L(V)$连续积,$(L(U))^{*}$(闭包)。
+    \begin{itemize}
+        \item $U|V$：表示正则式 U 或 V，例如 (ac|b) 表示符号 ac 或者 b。
+        \item $U \cdot V$：表示正则式 U 后跟着 V，例如 (ac)(b) 表示符号 acb。
+        \item $(U)^{*}$：表示任意个 U 中字符串的组合，例如 a$^{*}$ 对应正则集 \{$\epsilon$,a,aa,aaa,$\dots$\}。(ab)$^{*}$ 对应正则集 \{$\epsilon$,ab,abab,ababab,$\dots$\}，ab 为一个整体。
+    \end{itemize}
 \end{itemize}
 
 仅由有限次使用上述三步骤而得到的表达式才是 $\Sigma$ 上的正规式。仅由这些正规式所表示的字集才是 $\Sigma$ 上的正规集。
 
-正规式的运算符 ``|'' 读作``或''，``·''读作``连接''，``$^{*}$''读作``闭包''。规定运算符优先级如下：$^{*} \rightarrow \text{·} \rightarrow |$。连接符 ``·'' 可省略不写\footnote{书 P47 有几个正规集例子}。 
+正规式的运算符 ``|'' 读作``或''，``·''读作``连接''，``$^{*}$''读作``闭包''。规定运算符优先级如下：\textcolor{imp}{$^{*} \rightarrow \text{·} \rightarrow |$}。连接符 ``·'' 可省略不写\footnote{书 P47 有几个正规集例子}。 
 
 若两个正规式所表示的正规集相同，则认为二者等价。两个等价的正规式 U，V 记为 U = V。如果 U,V,W 均为正规式，由以下关系成立：
 
 \begin{itemize}
-    \item U|V=V|U \hfill (交换律)
-    \item U|(V|W) = (U|V)|W \hfill (结合律)
-    \item U(VW) = (UV)W \hfill (结合律)
-    \item U(V|W) = UV|UW \quad (V|W)U = VU|WU  \hfill (分配律)
-    \item $\epsilon$U = U$\epsilon$ = U
+    \item \textcolor{imp}{U|V=V|U} \hfill (交换律)
+    \item \textcolor{imp}{U|(V|W) = (U|V)|W} \hfill (结合律)
+    \item \textcolor{imp}{U(VW) = (UV)W} \hfill (结合律)
+    \item \textcolor{imp}{U(V|W) = UV|UW \quad (V|W)U = VU|WU}  \hfill (分配律)
+    \item \textcolor{imp}{$\epsilon$U = U$\epsilon$ = U}
 \end{itemize}
 
-\subsubsection{确定有限自动机(DFA)}
+\subsubsection{\textcolor{imp}{确定有限自动机(DFA)}}
 
 一个确定有限自动机(DFA)M是一个五元式:
 \[ M = (S,\Sigma,\delta,s_0,F) \]
@@ -296,7 +308,7 @@
     \end{aligned}
 \end{equation}
 
-他所对应的状态转换矩阵为：
+他所对应的状态转换矩阵为\footnote{书上比较难理解，建议看这个视频：\url{https://www.bilibili.com/video/BV1zW411t7YE?p=15}}：
 \begin{table}[H]
     \centering
     \caption{状态转换矩阵}
@@ -314,9 +326,9 @@
     \end{tabular}
 \end{table}
 
-一个 DFA 也可表示成一张(确定的)状态转换图。假定 DFA M 含有 m 个状态和 n 个输入字符，那么，这个图含有m个状态结点，每个结点顶多有n条箭弧射出和别的结点相连接，每条监护用 $\Sigma$ 中的一个不同输入字符作为标记，整张图含有为一个一个初态结点和若干个(可以是0个)终态结点。
+一个 DFA 也可表示成一张(确定的)状态转换图。假定 DFA M 含有 m 个状态和 n 个输入字符，那么，这个图含有 m 个状态结点，每个结点顶多有 n 条箭弧射出和别的结点相连接，即\textcolor{tip}{绘图时状态对应结点，输入字符对应连线}。每条箭头用 $\Sigma$ 中的一个不同输入字符作为标记，整张图含有一个初态结点和若干个(可以是0个)终态结点。
 
-对于 $\Sigma^*$ 中的任何字 $\alpha$，若存在一条从初始结点到终态结点的通路，且这条通路上所有弧的标记符连接成的字等于 $\alpha$，则称 $\alpha$ 可为 DFA M 所识别(读出或接受)。若 M 的初态结点同时又是终态结点，则空字 $\epsilon$ 可为 M 所识别(接受)。DFA M 所能识别的字的全体记为 L(M)。
+对于 $\Sigma^*$ 中的任何字 $\alpha$，\textcolor{tip}{若存在一条从初始结点到终态结点的通路，且这条通路上所有弧的标记符连接成的字等于 $\alpha$，则称 $\alpha$ 可为 DFA M 所识别(读出或接受)。若 M 的初态结点同时又是终态结点，则空字 $\epsilon$ 可为 M 所识别(接受)。DFA M 所能识别的字的全体记为 L(M)。}
 
 例如上面例子对应的状态转换图：
 
@@ -339,18 +351,39 @@
     \label{fig:状态转换图}
 \end{figure}
 
-如果 DFA M 的输入字母表为 $\Sigma$，则我们也称 M 是 $\Sigma$ 上的一个 DFA。可以证明：$\Sigma$ 上的一个字集 $V \subseteq \Sigma^*$ 是正规的，当且仅当存在 $\Sigma$ 上的 DFA M，使得 V=L(M)。
+如果 DFA M 的输入字母表为 $\Sigma$，则我们也称 M 是 $\Sigma$ 上的一个 DFA\footnote{听君一席话，如听一席话。简言之这句话是废话}。可以证明：$\Sigma$ 上的一个字集 $V \subseteq \Sigma^*$ 是正规的，当且仅当存在 $\Sigma$ 上的 DFA M，使得 V=L(M)\footnote{这句话也看不懂，建议忽略}。
 
 DFA 的确定性表现在映射 $\delta:S\times \Sigma \rightarrow S$ 是一个单值函数。也就是说，对任何状态 $s\in S$ 和输入符号 $a\in \Sigma$，$\delta(s,a)$ 唯一地确定了下一状态。如果允许 $\delta$ 是一个多值函数\footnote{一个 x 对应多个 y}，就得到了非确定的自动机。
 
-\subsubsection{非确定的有限自动机(NFA)}
+最长子串匹配原则：
+\begin{itemize}
+    \item 当输入串的多个前缀与一个或多个模式匹配时，总是选择最长的前缀进行匹配。
+    \item 在达到某个终态后，只要输入带上还有符号，FA就继续前进，以便寻找尽可能长的匹配。
+\end{itemize}
+
+例如在下图中，如果我们遇到了 <= , 则既可以在 1 终结也可以在 2 终结，但是按最长字串匹配原则应该在 2 终结。
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \node[draw] (0) at (0,0) {0};
+        \node[draw,double] (1) at (2.5,0) {1};
+        \node[draw,double] (2) at (5,0) {2};
+        \draw (0) -- (1) node [pos=0.5,above] {<};
+        \draw (1) -- (2) node [pos=0.5,above] {=};
+    \end{tikzpicture}
+    \caption{最长字串匹配原则}
+    \label{fig:最长字串匹配原则}
+\end{figure}
+
+\subsubsection{\textcolor{imp}{非确定的有限自动机(NFA)}}
 
 一个非确定有限自动机(NFA)M是一个五元式:
 \[ M = (S,\Sigma,\delta,s_0,F) \]
 
 \begin{itemize}
     \item $S,\Sigma,F$ 意义与 NFA 相同。
-    \item $S_0 \subseteq S$: 一个非空初态集。
+    \item $s_0 \subseteq S$: 一个非空初态集。
     \item $\delta$: 一个从 $S \times \Sigma^*$ 到 S 的子集映照。即 $\delta:S\times \Sigma^* \rightarrow 2^S$。
 \end{itemize}
 
@@ -524,15 +557,350 @@ DFA 的确定性表现在映射 $\delta:S\times \Sigma \rightarrow S$ 是一个�
     \item 对任何正规式 r,都存在一个 FA M, 使得 L(M)=L(r)。
 \end{itemize}
 
+总而言之一句话，三者是等价的：正则文法 $\leftrightarrow$ 正则表达式 $\leftrightarrow$ FA。
+
+
 \subsubsection{确定有限自动机的化简}
 
 一个确定有限自动机 M 的化简指的是：寻找一个状态数比 M 少的 DFA M$^{'}$，使得 L(M) = L(M$^{'}$)。
 
-假定 s 和 t 是 M 的两个不同状态，我们称 s 和 t 是等价的：如果从状态 s 出发能读出某个字 w 而停于终态，那么同样，从 t 出发也能读出同样的字 w 而停于终态；反之，若从 t 出发能读出某个字 w 而停于终态，则从 s 出发也能读出同样的 w 而停于终态。
+假定 s 和 t 是 M 的两个不同状态，我们称 s 和 t 是等价的：如果从状态\footnote{转换图中的结点} s 出发能读出某个字 w 而停于终态，那么同样，从 t 出发也能读出同样的字 w 而停于终态；反之，若从 t 出发能读出某个字 w 而停于终态，则从 s 出发也能读出同样的 w 而停于终态。
 
 如果 DFA M 的两个状态 s 和 t 不等价，则称这两个状态是可区别的。例如，终态与非终态是可区别的。因为，终态能读出空字 $\epsilon$，非终态则不能。
 
 一个 DFA M 的状态最少化过程旨在将 M 的状态集分割成一些不相交的子集，使得任何不同的两子集中的状态都是可区别的，而同一子集中的任何两个状态都是等价的。最后，在每个子集中选出一个代表，同时消去其他等价状态。
 
+\subsubsection{\textcolor{imp}{正则表达式与有限自动机的转换}}
+
+这章为笔者添加的，主要是对一些方法的归纳，用于做题，仅供参考。
+
+从 RE 直接构建 DFA 比较困难，常用的方式是从 RE 构建 NFA 再构建 DFA。
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[thick]
+        \node[fill=orange!50] (RE) at (0,0) {RE};
+        \node[fill=green!50] (NFA) at (3.5,1.2) {NFA};
+        \node[fill=green!50] (DFA) at (7,0) {DFA};
+        \draw [-{Stealth}] (RE) -- (DFA);
+        \draw [-{Stealth},dashed] (RE) -- (NFA);
+        \draw [-{Stealth},dashed] (NFA) -- (DFA);
+    \end{tikzpicture}
+    \caption{RE-FA}
+    \label{fig:RE-FA}
+\end{figure}
+
+\noindent\textbf{RE $\rightarrow$ NFA}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = -5cm,yshift=-0.75cm]
+            \node at (5,0) {$\epsilon$};
+            \node[draw] (i) at (6,0) {i};
+            \node[draw] (j) at (8,0) {j};
+            \draw (i) -- (j) node [pos=0.5,above=-1pt] {$\epsilon$};
+        \end{scope}
+        \begin{scope}[xshift = -5cm,yshift=-2.25cm]
+            \node at (5,0) {A};
+            \node[draw] (i) at (6,0) {i};
+            \node[draw] (j) at (8,0) {j};
+            \draw (i) -- (j) node [pos=0.5,above=-1pt] {A};
+        \end{scope}
+        \begin{scope}
+            \node at (5,0) {AB};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (k2) at (8,0) {k};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) -- (k2) node [pos=0.5,above=-1pt] {A};
+            \draw (k2) -- (j2) node [pos=0.5,above=-1pt] {B};
+        \end{scope}
+        \begin{scope}[yshift = -1.5cm]
+            \node at (5,0) {A/B};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) to[out = 30,in=150] node [pos=0.5,below=-1pt] {A} (j2);
+            \draw (i2) to[out=-30,in=-150] node [pos=0.5,above=-1pt] {B} (j2);
+        \end{scope}
+        \begin{scope}[yshift=-3cm]
+            \node at (5,0) {A*};
+            \node[draw] (i2) at (6,0) {i};
+            \node[draw] (k2) at (8,0) {k};
+            \node[draw] (j2) at (10,0) {j};
+            \draw (i2) -- (k2) node [pos=0.5,above=-1pt] {$\epsilon$};
+            \draw (k2) -- (j2) node [pos=0.5,above=-1pt] {$\epsilon$};
+            \draw (k2) ..controls +(-0.5,-1) and +(0.5,-1).. (k2) node[pos=0.5,below] {A};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{RE 到 NFA 替换规则}
+    \label{fig:RE 到 NFA 替换规则}
+\end{figure}
+
+假如有 r=(a|b)*abb 转换为 NFA 过程如下(XY分别表示开始与结束)，注意画法不止一种：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {X};
+            \node[draw,double] (end) at (8,0) {Y};
+            \draw (begin) -- (end) node [pos=0.5,above=-0.5cm] {(a|b)*abb};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{一:创建初始到结束结点并连接}
+    \label{fig:一:创建初始到结束结点并连接}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {X};
+            \node[draw] (1) at (3.5,0) {1};
+            \node[draw] (2) at (5,0) {2};
+            \node[draw] (3) at (6.5,0) {3};
+            \node[draw,double] (end) at (8,0) {Y};
+            \draw (begin) -- (1) node [pos=0.5,above=-0.2cm] {(a|b)*};
+            \draw (1) -- (2) node [pos=0.5,above=0.2cm] {a};
+            \draw (2) -- (3) node [pos=0.5,above=0.2cm] {b};
+            \draw (3) -- (end) node [pos=0.5,above=0.2cm] {b};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{二：初步分解连接运算}
+    \label{fig:二：初步分解连接运算}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {X};
+            \node[draw] (1) at (2,0) {1};
+            \node[draw] (2) at (4,0) {2};
+            \node[draw] (3) at (6,0) {3};
+            \node[draw,double] (end) at (8,0) {Y};
+            \draw (begin) -- (1) node [pos=0.5,above=0.2cm] {$\epsilon$};
+            \draw (1) ..controls +(-0.5,1) and +(0.5,1).. (1) node [pos=0.5,above=-0.2cm] {a|b};
+            \draw (1) -- (2) node [pos=0.5,above=0.2cm] {a};
+            \draw (2) -- (3) node [pos=0.5,above=0.2cm] {b};
+            \draw (3) -- (end) node [pos=0.5,above=0.2cm] {b};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{三：分解闭包}
+    \label{fig:三：分解闭包}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {X};
+            \node[draw] (1) at (2,0) {1};
+            \node[draw] (2) at (4,0) {2};
+            \node[draw] (3) at (6,0) {3};
+            \node[draw,double] (end) at (8,0) {Y};
+            \draw (begin) -- (1) node [pos=0.5,above=0.2cm] {$\epsilon$};
+            \draw (1) ..controls +(-0.5,1) and +(0.5,1).. (1) node [pos=0.5,above] {a};
+            \draw (1) ..controls +(0.5,-1) and +(-0.5,-1).. (1) node [pos=0.5,below] {b};
+            \draw (1) -- (2) node [pos=0.5,above=0.2cm] {a};
+            \draw (2) -- (3) node [pos=0.5,above=0.2cm] {b};
+            \draw (3) -- (end) node [pos=0.5,above=0.2cm] {b};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{三：分解或运算}
+    \label{fig:三：分解或运算}
+\end{figure}
+
+\noindent\textbf{NFA $\rightarrow$ DFA}
+
+假设有以下 NFA：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {A};
+            \node[draw] (1) at (3,0) {B};
+            \node[draw] (2) at (6,0) {C};
+            \node[draw,double] (end) at (9,0) {D};
+            \draw (begin) -- (1) node [pos=0.5,above] {a};
+            \draw (1) -- (2) node [pos=0.5,above] {b};
+            \draw (2) -- (end) node [pos=0.5,above] {c};
+            \draw (begin) ..controls +(-0.5,1) and +(0.5,1).. (begin) node [pos=0.5,above] {a};
+            \draw (1) ..controls +(-0.5,1) and +(0.5,1).. (1) node [pos=0.5,above] {b};
+            \draw (2) ..controls +(-0.5,1) and +(0.5,1).. (2) node [pos=0.5,above] {c};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{目标 NFA}
+    \label{fig:目标 NFA}
+\end{figure}
+
+首先，画转换表：
+
+\begin{table}[H]
+    \centering
+    \caption{目标 NFA 的转换表}
+    \label{table:目标 NFA 的转换表}
+    \setlength{\tabcolsep}{10mm}
+    \begin{tabular}{c|ccc}
+        \toprule
+        \textbf{状态} & \textbf{a} & \textbf{b} & \textbf{c} \\
+        \midrule
+        A & \{A,B\} & $\phi$ & $\phi$ \\
+        B & $\phi$ & \{B,C\} & $\phi$ \\
+        C & $\phi$ & $\phi$ & \{C,D\} \\
+        D & $\phi$ & $\phi$ & $\phi$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+按以下规则绘图：
+\begin{itemize}
+    \item 如果某个状态集(相对于 NFA，例如(A,B,C))中的一个子状态传入字符能达到下一个字符(例如传入 a，A->X,BC不能)，则该状态集也能达到下一个字符(即(A,B,C)整体能到达 X)。也即采用 any(A,B,C) 运算。
+    \item 如果某个状态集中包含终止状态，则这个状态集为终止状态。
+    \item 只要下一个状态集与已有的状态集不同，就算是子集，也算作新状态。
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {A};
+            \node[draw,double] (end) at (3,0) {A,B};
+            \draw (begin) -- (end) node [pos=0.5,above] {a};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{一：从起始结点 A 出发，查表绘制下一个状态}
+    \label{fig:一：从起始结点 A 出发，查表绘制下一个状态}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {A};
+            \node[draw] (end) at (3,0) {A,B};
+            \draw (begin) -- (end) node [pos=0.5,above] {a};
+            \draw (end) ..controls +(-0.5,1.2) and +(0.5,1.2).. (end) node [pos=0.5,above] {a};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{二：从 A,B 出发，遇到 a 继续进入 A,B}
+    \label{fig:二：从 A,B 出发，遇到 a 继续进入 A,B}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (begin) at (0,0) {A};
+            \node[draw] (1) at (3,0) {A,B};
+            \node[draw] (2) at (6,0) {B,C};
+            \node[draw,double] (end) at (9,0) {C,D};
+            \draw (begin) -- (1) node [pos=0.5,above] {a};
+            \draw (1) ..controls +(-0.5,1.2) and +(0.5,1.2).. (1) node [pos=0.5,above] {a};
+            \draw (1) -- (2) node [pos=0.5,above] {b};
+            \draw (2) ..controls +(-0.5,1.2) and +(0.5,1.2).. (2) node [pos=0.5,above] {b};
+            \draw (2) -- (end) node [pos=0.5,above] {c};
+            \draw (end) ..controls +(-0.5,1.2) and +(0.5,1.2).. (end) node [pos=0.5,above] {c};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{三：按此方法继续构造}
+    \label{fig:三：按此方法继续构造}
+\end{figure}
+
+带有 $\epsilon$ 边的转换，有这样一个 NFA：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw] (1) at (0,0) {A};
+            \node[draw] (2) at (3,0) {B};
+            \node[draw,double] (end) at (6,0) {C};
+            \draw (1) ..controls +(-0.5,1) and +(0.5,1).. (1) node [pos=0.5,above] {a};
+            \draw (1) -- (2) node [pos=0.5,above] {$\epsilon$};
+            \draw (2) ..controls +(-0.5,1) and +(0.5,1).. (2) node [pos=0.5,above] {b};
+            \draw (2) -- (end) node [pos=0.5,above] {$\epsilon$};
+            \draw (end) ..controls +(-0.5,1) and +(0.5,1).. (end) node [pos=0.5,above] {c};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{带 $\epsilon$ 的 NFA}
+    \label{fig: NFA}
+\end{figure}
+
+同样画表：
+\begin{table}[H]
+    \centering
+    \caption{目标 NFA 的转换表}
+    \label{table:目标 NFA 的转换表}
+    \setlength{\tabcolsep}{10mm}
+    \begin{tabular}{c|ccc}
+        \toprule
+        \textbf{状态} & \textbf{a} & \textbf{b} & \textbf{c} \\
+        \midrule
+        A & \{A,B,C\} & \{B,C\} & \{C\} \\
+        B & $\phi$ & \{B,C\} & \{C\} \\
+        C & $\phi$ & $\phi$ & \{C\} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+由于不需要遇到任何符号，都能进入 A,B,C 所以它们都是初始状态。由于 C 的加入，这个状态集又是终止状态。
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw,double] (1) at (0,0) {A,B,C};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{既全是初始状态又是终止状态}
+    \label{fig: 既全是初始状态又是终止状态}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw,double] (1) at (0,0) {A,B,C};
+            \draw (1) ..controls +(-0.5,1.5) and +(0.5,1.5).. (1) node [pos=0.5,above] {a};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{遇到a进入自身}
+    \label{fig: 遇到a进入自身}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw,double] (1) at (0,0) {A,B,C};
+            \draw (1) ..controls +(-0.5,1.5) and +(0.5,1.5).. (1) node [pos=0.5,above] {a};
+            \node[draw,double] (2) at (3,1.5) {B,C};
+            \draw (1) -- (2) node [pos=0.5,above] {b};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{遇到 b 进入新状态}
+    \label{fig: 遇到 b 进入新状态}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,shape=circle,-Stealth,thick,inner sep=3pt]
+        \begin{scope}[xshift = 0cm,yshift = 0cm]
+            \node[draw,double] (1) at (0,0) {A,B,C};
+            \draw (1) ..controls +(-0.5,1.5) and +(0.5,1.5).. (1) node [pos=0.5,above] {a};
+            \node[draw,double] (2) at (3,1.5) {B,C};
+            \draw (1) -- (2) node [pos=0.5,above] {b};
+            \draw (2) ..controls +(-0.5,1.2) and +(0.5,1.2).. (2) node [pos=0.5,above] {b};
+            \node[draw,double] (3) at (3,-1.5) {C};
+            \draw (1) -- (3) node [pos=0.5,above] {c};
+            \draw (2) -- (3) node [pos=0.5,right] {c};
+            \draw (3) ..controls +(-0.5,-1.2) and +(0.5,-1.2).. (3) node [pos=0.5,above] {c};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{采用同样方法继续绘制}
+    \label{fig: 采用同样方法继续绘制}
+\end{figure}
 
 \newpage
