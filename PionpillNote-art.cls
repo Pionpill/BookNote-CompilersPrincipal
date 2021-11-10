@@ -97,6 +97,12 @@
 \renewcommand*{\floatpagefraction}{0.85}
 \renewcommand{\headrulewidth}{0pt}
 
+% ========================= 新的颜色 =========================
+% 颜色强度：红 > 蓝 > 绿  红色表重点，蓝色表次重点，绿色表值得一提
+\definecolor{imp}{RGB}{202,12,22}     % 强调色，红
+\definecolor{mark}{RGB}{34,103,158}   % 提示色，蓝
+\definecolor{tip}{RGB}{0,100,0}       % 标注色，绿
+
 % ========================= 定理等环境 =========================
 \newtheorem{theorem}{\hspace{2em}定理}[section]
 \newtheorem{definition}{\hspace{2em}定义}[section]
