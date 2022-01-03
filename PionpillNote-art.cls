@@ -102,6 +102,7 @@
 \definecolor{imp}{RGB}{202,12,22}     % 强调色，红
 \definecolor{mark}{RGB}{34,103,158}   % 提示色，蓝
 \definecolor{tip}{RGB}{0,100,0}       % 标注色，绿
+\definecolor{grey}{RGB}{150,150,150}      % 灰色
 
 % ========================= 定理等环境 =========================
 \newtheorem{theorem}{\hspace{2em}定理}[section]
