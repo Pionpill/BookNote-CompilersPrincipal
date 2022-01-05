@@ -149,7 +149,7 @@
 
 为了克服自上而下分析的缺陷：左递归，回溯。这节将研究递归子程序分析算法及其变种—预测分析法。
 
-\subsubsection{左递归的消除}
+\subsubsection{\textcolor{imp}{消除左递归}}
 
 假定关于非终结符 P 的规则为\footnote{这里有很好的解释：\url{https://www.bilibili.com/video/BV1zW411t7YE?p=20}}：
 \[ P \rightarrow P\alpha|\beta \]
@@ -183,7 +183,7 @@
 \end{equation}
 
 一般而言，假定 P 关于的全部产生式：
-\[ P \rightarrow P\alpha_1 | P\alpha_2 | \cdots | P\alpha_m | \beta_1 | \beta_2 | \cdots | \beta_m \]
+\[ P \rightarrow P\alpha_1 | P\alpha_2 | \cdots | P\alpha_m | \beta_1 | \beta_2 | \cdots | \beta_n \]
 其中，每个 $\alpha$ 不为 $\epsilon$，每个 $\beta$ 不以 P 开头，那么消除左递归后的规则为：
 \begin{equation}
     \begin{aligned}
@@ -194,18 +194,11 @@
 
 使用这个办法，可以将见诸于表面上的直接左递归消除(即把直接左递归改成直接右递归)。但这并不能消除整个文法的左递归性。
 
-如果一个文法不含回路(形如 $P \stackrel{+}{\Rightarrow} P 的推导$ )，也不含以 $\epsilon$ 为右部的产生式，那么，下列算法将保证删除左递归。
+消除间接左递归只需要将产生间接左递归的式子直接带入，变成直接左递归之后再消除即可。
 
-\begin{enumerate}
-    \item 把文法 G 的所有非终结符按任一种顺序排列成 $P_1,P_2,\cdots,P_n$；按此顺序执行。
-    \item 把形如 $P_i \rightarrow P_j \gamma$ 的规则改写成 $P_i \rightarrow \delta_1\gamma | \delta_2\gamma | \cdots | \delta_k\gamma$。\\
-          其中 $P_j \rightarrow \delta_1 | \delta_2 | \cdots | \delta_k$ 是关于 $P_j$ 的所有规则。消除关于 $P_i$ 规则的直接左递归性。
-    \item 化简上一步得到的文法。即去除那些从开始符号触发永远无法到达的非终结符的产生规则。
-\end{enumerate}
+\subsubsection{\textcolor{grey}{消除回溯，提左因子}}
 
-\subsubsection{消除回溯，提左因子}
-
-为了消除回溯就必须保证候选项获得成功的匹配。假设任务 A 有 n 个候选项 $\alpha_1,\alpha_2,\cdots,\alpha_n$。A 所面临的第一个输入符号为 a，如果 A 能够根据不同的输入符号指派相应的候选 $\alpha_i$去匹配，就没有回溯了。
+为了消除回溯就必须保证候选项获得成功的匹配。假设 A 有 n 个候选项 $\alpha_1,\alpha_2,\cdots,\alpha_n$。A 所面临的第一个输入符号为 a，如果 A 能够根据不同的输入符号指派相应的候选 $\alpha_i$去匹配，就没有回溯了。
 
 令 G 是一个不含左递归的文法，对 G 的所有非终结符的每个候选 $\alpha$ 定义它的终结首符集 FIRST($\alpha$) 为：
 \[\text{FIRST}(\alpha) = \{ a | \alpha \stackrel{*}{\Rightarrow} a \cdots, a \in V_{T} \}\]
@@ -224,22 +217,60 @@
 \end{equation}
 经过反复提取左因子，就能够把每个非终结符的所有候选首符集变成两两不相交。
 
-\subsubsection{LL(1)分析条件}
+\subsubsection{\textcolor{imp}{FOLLOW 集和 FIRST 集}}
 
-假定 S 是文法 G 的开始符号，对于 G 的任何非终结符 A，我们定义
+\noindent\textbf{\textcolor{imp}{FOLLOW 集}}
+
+假定 S 是文法 G 的开始符号，对于 G 的任何非终结符 A， \textcolor{mark}{可能在某个句型中紧跟在 A 后边的终结符 $a$ 的集合}，记为 FOLLOW(A)。
 \[ \text{FOLLOW}(A) = \{ a|S\stackrel{*}{\Rightarrow} \cdots Aa \cdots, a\in V_T \} \]
-特别是，若 $S\stackrel{*}{\Rightarrow} \cdots A$，则规定 $\# \in \text{FOLLOW}(A)$。换句话说，$\text{FOLLOW}(A)$ 是所有句型中出现在紧接 A 之后的终结符或 \#。
+若 $S\stackrel{*}{\Rightarrow} \cdots A$，则规定 $\# \in \text{FOLLOW}(A)$。换句话说，$\text{FOLLOW}(A)$ 是所有句型中出现在紧接 A 之后的终结符或 \#(结束符)。
 
-因此，当非终结符 A 面临输入符号 a，且 a 不属于 A 的任意候选首符集但 A 的某个候选首符集包含 $\epsilon$ 时，只有当 $a \in \text{FOLLOW}(A)$，才可能允许 A 自动匹配。
+\noindent\textbf{SELECT 候选集}
+
+产生式 $A \rightarrow \beta$ 的候选集是指可以选用该产生式进行推导时对应的输入符号的集合，记为 SELECT($A \rightarrow \beta$)\footnote{也即遇到对应输入符号时可以使用这个产生式}。
+
+SELECT 有如下规则:
+\begin{itemize}
+    \item SELECT($A \rightarrow a\beta$) = \{$a$\}
+    \item SELECT($A \rightarrow \epsilon$) = FOLLOW(A)
+\end{itemize}
+
+\noindent\textbf{\textcolor{imp}{FIRST 集}}
+
+串首终结符，即串首第一个符号，并且是终结符，简称首终结符。
+
+给定一个文法符号串 X，X 的串首终结符集 FIRST(X) 定义：
+\begin{itemize}
+    \item 可以从 X 推导出的所有串首终结符构成的集合。
+    \item 如果 X $\stackrel{*}{\Rightarrow} \epsilon$，那么 $\epsilon \in$ FIRST(X)。
+\end{itemize}
+
+FIRST(X) 算法：不断应用下列规则，直到没有新的终结符或$\epsilon$可以被加入到任何 FIRST 集合中为止。
+\begin{itemize}
+    \item 如果 X 是一个终结符，那么 FIRST(X) = X。
+    \item 如果 X 是一个非终结符，有 X $\rightarrow Y_1 \cdots Y_k \in P (k\geq 1) $，那么如果对于某个 $i$，a 在 FIRST($Y_i$) 中，且 $Y_i$ 前的所有非终结符的 FIRST 集中都存在 $\epsilon$。就把 a 加入到 FIRST(X) 中。如果所有 $Y_i$ 的 FIRST 集中都有 $\epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
+    \item 如果 X$\rightarrow \epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
+\end{itemize}
+
+有了 FIRST 集后，产生式 $A \rightarrow \alpha$ 的可选集 SELECT:
+\begin{itemize}
+    \item 如果 $\epsilon \notin FIRST(\alpha)$, 那么 $SELECT(A\rightarrow\alpha) = FIRST(\alpha)$
+    \item 如果 $\epsilon \in FIRST(\alpha)$, 那么 $SELECT(A\rightarrow\alpha) = (FIRST(\alpha) - \{\epsilon\}) \cup FOLLOW(A)$
+\end{itemize}
+
+\newpage
+
+\subsubsection{\textcolor{mark}{LL(1)文法}}
 
 通过上面一系列讨论，我们可以找出满足构造不带回溯的自上而下分析的文法条件。
-\begin{enumerate}
-    \item 文法不含左递归。
-    \item 文法中每一个非终结符 A 的各个产生式的候选首符集两两不相交。
-    \item 对文法中的每个非终结符A，若它存在某个候选首符集包含 $\epsilon$，则
-          \[ \text{FIRST(A)} \cap \text{FOLLOW(A)} = \phi \]
-\end{enumerate}
-如果一个文法 G 满足以上条件，则称该文法 G 为 LL(1) 文法。LL(1) 中第一个 L 表示从左到右扫描输入串，第二个 L 表示最左推导，1 表示分析时每一步只需向前查看一个符号。
+\textcolor{mark}{
+    \begin{enumerate}
+        \item 文法不含左递归。
+        \item 文法中每一个非终结符 A 的各个产生式的候选首符集两两不相交。
+        \item 对文法中的每个非终结符A，若它存在某个候选首符集包含 $\epsilon$，则
+              \[ \text{FIRST(A)} \cap \text{FOLLOW(A)} = \phi \]
+    \end{enumerate}}
+如果一个文法 G 满足以上条件，则称该文法 G 为 LL(1) 文法。\textcolor{mark}{LL(1) 中第一个 L 表示从左到右扫描输入串，第二个 L 表示最左推导，1 表示分析时每一步只需向前查看一个符号。}
 
 对于一个 LL(1) 文法，可以对其输入串进行有效的无回溯的自上而下分析。假设要用非终结符 A 进行匹配，面临的输入符号为 a,A 的所有产生式为
 \[ A \rightarrow \alpha_1 | \alpha_2 | \cdots | \alpha_n \]
@@ -252,19 +283,136 @@
           \end{itemize}
 \end{itemize}
 
-\noindent\textbf{FIRST 集的计算方法}
 
-FIRST(X) 的定义：
+
+\subsection{总结与题型}
+\subsubsection{\textcolor{imp}{FIRST 集, FOLLOW 集, SELECT 集的计算}}
+\noindent\textbf{FIRST 集}
+
+$FIRST(X)$ 定义: 可以从 $X$ 推导出的所有串首终结符构成的集合，如果能推出空集($\epsilon$),那么 $\epsilon \in FIRST(X)$。
+
+$FIRST(X)$ 计算的三种情况:
 \begin{itemize}
-    \item 可以从 X 推导出的所有串首终结符\footnote{串首第一个符号，并且是终结符。}构成的集合。
-    \item 如果 X $\stackrel{*}{\Rightarrow} \epsilon$，那么 $\epsilon \in$ FIRST(X)。
+    \item 首字符是终结符($E \rightarrow \alpha$): 直接加入对应的 $FIRST$ 集中: $FIRST(E) = \alpha$。
+    \item 首字符不是终结符($E \rightarrow A\alpha$): 对应非终结符的 $FIRST$ 集加入到要求的 $FIRST$ 集中: $FIRST(E) = FIRST(A)$。
+    \item 推导出空串($E \rightarrow \epsilon$): 将空串加入到 对应的 $FIRST$ 集中: $FIRST(E) = \epsilon$。
 \end{itemize}
 
-FIRST(X) 算法：不断应用下列规则，直到没有新的终结符或$\epsilon$可以被加入到任何 FIRST 集合中为止。
+计算大致可以分两个步骤，第一步找能找全的非终结符和空串; 第二部将其他 FIRST 集的内容填入。
+
+举个例子(计算符号的FIRST集):
+
+\begin{table}[H]
+    \centering
+    \caption{FIRST 集计算}
+    \label{table:FIRST 集计算}
+    \setlength{\tabcolsep}{10mm}
+    \begin{tabular}{l|l|l}
+        \toprule
+        \textbf{产生式}               & \textbf{第一步}            & \textbf{第二步}            \\
+        \midrule
+        $E\rightarrow TE'$            & $FIRST(E)=FIRST(T)$        & $FIRST(E)=\{(,id\}$        \\
+        $E'\rightarrow+ TE'|\epsilon$ & $FIRST(E')=\{+,\epsilon\}$ & $FIRST(E')=\{+,\epsilon\}$ \\
+        $T\rightarrow FT'$            & $FIRST(T)=FIRST(F)$        & $FIRST(T)=\{(,id\}$        \\
+        $T'\rightarrow *FT'|\epsilon$ & $FIRST(T')=\{*,\epsilon\}$ & $FIRST(T')=\{*,\epsilon\}$ \\
+        $F\rightarrow (E)|id$         & $FIRST(F)=\{(,id\}$        & $FIRST(F)=\{(,id\}$        \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+在计算符号的 $FIRST$ 集的基础上，还可以计算串的 $FIRST$ 集，例如计算 $X_1 X_2 \dots X_n$ 的 FIRST 集:
 \begin{itemize}
-    \item 如果 X 是一个终结符，那么 FIRST(X) = X。
-    \item 如果 X 是一个非终结符，有 X $\rightarrow Y_1 \cdots Y_k \in P (k\geq 1) $，那么如果对于某个 $i$，a 在 FIRST($Y_i$) 中，且 $Y_i$ 前的所有非终结符的 FIRST 集中都存在 $\epsilon$。就把 a 加入到 FIRST(X) 中。如果所有 $Y_i$ 的 FIRST 集中都有 $\epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
-    \item 如果 X$\rightarrow \epsilon$，就把 $\epsilon$ 加入到 FIRST(X)。
+    \item 加入 $FIRST(X_1)$ 中的所有非 $\epsilon$ 符号
+    \item 如果 $\epsilon$在$FIRST(X_1)$ 中，则加入 $FIRST(X_2)$ 中的所有非 $\epsilon$ 符号
+    \item 以此类推
+    \item 如果直至 $\epsilon$在$FIRST(X_n)$, 则将 $\epsilon$ 加入串的 $FIRST$ 集中
 \end{itemize}
 
-\newpage
+\noindent\textbf{FOLLOW 集}
+
+$FOLLOW(X)$ 集定义: 所有句型中出现在紧接 X 之后的终结符, 若 X 是某个句型的最右符号，则加上结束符 \#。
+
+计算 $FOLLOW$ 集首先需要计算 $FIRST$ 集，然后对每个产生式从左到右进行如下分析\footnote{这里有更详细的讲解: \url{https://www.bilibili.com/video/BV1zW411t7YE?p=22}}:
+\begin{itemize}
+    \item 如果是最右符号，加入结束符 \#。
+    \item 将紧挨着的下一个非终结符的 $FIRST$ 集中的非终结符(不包含 $\epsilon$ )加入到前一个非终结符的 $FOLLOW$ 集中。
+    \item 如果某个非终结符的 $FIRST$ 集中包含 $\epsilon$，则需屏蔽该非终结符进行分析。
+    \item 表达式右边的最后一个非终结符的 $FOLLOW$ 集包含表达式左边最后一个非终结符的 $FOLLOW$ 集。
+    \item 如果非终结符后面跟着终结符，则将该终结符加入到非终结符的 $FOLLOW$ 集中。
+    \item 不断迭代，直至所有非终结符的 $FOLLOW$ 集不再更新。
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \caption{FOLLOW 集计算}
+    \label{table:FOLLOW 集计算}
+    \setlength{\tabcolsep}{10mm}
+    \begin{tabular}{l|l|l}
+        \toprule
+        \textbf{产生式}               & \textbf{$FIRST$集}         & \textbf{$FOLLOW$集}      \\
+        \midrule
+        $E\rightarrow TE'$            & $FIRST(E)=\{(,id\}$        & $FOLLOW(E)=\{\#,)\}$     \\
+        $E'\rightarrow+ TE'|\epsilon$ & $FIRST(E')=\{+,\epsilon\}$ & $FOLLOW(E')=\{\#,)\}$    \\
+        $T\rightarrow FT'$            & $FIRST(T)=\{(,id\}$        & $FOLLOW(T)=\{+,\#,)\}$   \\
+        $T'\rightarrow *FT'|\epsilon$ & $FIRST(T')=\{*,\epsilon\}$ & $FOLLOW(T')=\{+,\#,)\}$  \\
+        $F\rightarrow (E)|id$         & $FIRST(F)=\{(,id\}$        & $FOLLOW(F)=\{*,+,\#,)\}$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\noindent\textbf{SELECT 集}
+
+$SELECT$ 集计算的三种情况:
+\begin{itemize}
+    \item 产生式右部首字符是终结符: $SELECT$ 集是对应终结符。
+    \item 产生式右部首字符是非终结符: $SELECT$ 集是对应非终结符的 $FIRST$ 集中的非 $\epsilon$ 的终结符。
+    \item 产生式右部首字符是$\epsilon$: $SELECT$ 集是左部的 $FOLLOW$ 集。
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \caption{SELECT 集计算}
+    \label{table:SELECT 集计算}
+    \setlength{\tabcolsep}{25mm}
+    \begin{tabular}{l|l}
+        \toprule
+        \textbf{产生式}             & \textbf{$SELECT$集}    \\
+        \midrule
+        $(1)E\rightarrow TE'$       & $SELECT(1)=\{(,id\}$   \\
+        $(2)E'\rightarrow+ TE'$     & $SELECT(2)=\{+\}$      \\
+        $(3)E'\rightarrow\epsilon$  & $SELECT(3)=\{\#,)\}$   \\
+        $(4)T\rightarrow FT'$       & $SELECT(4)=\{(,id)\}$  \\
+        $(5)T'\rightarrow *FT'$     & $SELECT(5)=\{*\}$      \\
+        $(6)T'\rightarrow \epsilon$ & $SELECT(6)=\{+,),\#\}$ \\
+        $(7)F\rightarrow (E)$       & $SELECT(7)=\{(\}$      \\
+        $(8)F\rightarrow id$        & $SELECT(8)=\{\#\}$     \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\noindent\textbf{判断是否为 LL(1) 文法}
+
+判断是否为 LL(1) 文法只需要看左部相同的产生式的 $SELECT$ 集是否相交。不相交，则是 LL(1) 文法。
+
+\noindent\textbf{预测分析表}
+
+根据 $SEELCT$ 集可以构建预测分析表，看表怎么画就知道这是啥了:
+
+\begin{table}[H]
+    \centering
+    \caption{预测分析表}
+    \label{table:预测分析表}
+    \setlength{\tabcolsep}{3mm}
+    \begin{tabular}{c|c|c|c|c|c|c}
+        \toprule
+        \multirow{2}{*}{非终结符} & \multicolumn{6}{c}{输入符号}                                                                                                                       \\ \cline{2-7}
+                                  & $id$                         & $+$                       & $*$                   & $($                 & $)$                 & \#                  \\
+        \midrule
+        $E$                       & $E \rightarrow TE'$          &                           &                       & $E\rightarrow TE'$  &                     &                     \\
+        $E'$                      &                              & $E' \rightarrow +TE'$     &                       &                     & $E' \rightarrow \#$ & $E' \rightarrow \#$ \\
+        $T$                       & $T\rightarrow FT'$           &                           &                       & $T\rightarrow FT'$  &                     &                     \\
+        $T'$                      &                              & $T' \rightarrow \epsilon$ & $T' \rightarrow *FT'$ &                     & $T' \rightarrow \#$ & $T' \rightarrow \#$ \\
+        $F$                       & $F \rightarrow id$           &                           &                       & $F \rightarrow (E)$ &                     &                     \\
+        \bottomrule
+    \end{tabular}
+\end{table}
