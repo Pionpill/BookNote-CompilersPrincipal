@@ -143,8 +143,8 @@ LR 分析表结构:
 
 分析表如下，其中:
 \begin{itemize}
-    \item sn: 将符号 a, 状态 n 压入栈
-    \item rn: 用第 n 个产生式进行归约
+    \item sn: 将符号 a, 状态 n 压入栈(进行移入操作，并进入状态n)
+    \item rn: 用第 n 个产生式进行归约(进行归约操作，使用第 n 个产生式归约)
 \end{itemize}
 
 \begin{table}[H]
@@ -203,7 +203,7 @@ LR(0) 项目: 右部某位置标有圆点的产生式称为相应文法的一个
 
 \subsubsection{\textcolor{mark}{SLR 分析}}
 
-LR(0) 分析过程中的冲突: 项目集中\textcolor{mark}{移入归约冲突}，不知道到底用哪个。如果栈顶符号是句柄，应该归约，但是 LR(0) 本身不考虑上下文环境，无法判断。
+LR(0) 分析过程中的冲突: 项目集中\textcolor{mark}{移进归约冲突}\footnote{LR(0)只有这个冲突，题目问到冲突，找产生式相同的，说是移进规约冲突就行了，下面也类似。}，不知道到底用哪个。如果栈顶符号是句柄，应该归约，但是 LR(0) 本身不考虑上下文环境，无法判断。
 
 这个时候要依靠 $FOLLOW$ 集，\textcolor{imp}{如果产生式左部符号的 $FOLLOW$ 集中存在可以进入下一个项目集的符号，那么可以归约，否则不可以。}
 
@@ -417,8 +417,6 @@ LALR 分析法的特点:
 
 \begin{table}[H]
     \centering
-    \caption{LR 分析表结构}
-    \label{table:LR 分析表结构}
     \setlength{\tabcolsep}{4mm}
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
         \hline

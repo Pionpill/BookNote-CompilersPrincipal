@@ -260,15 +260,16 @@ FIRST(X) 算法：不断应用下列规则，直到没有新的终结符或$\eps
 
 \newpage
 
-\subsubsection{\textcolor{mark}{LL(1)文法}}
+\subsubsection{\textcolor{imp}{LL(1)文法}}
 
 通过上面一系列讨论，我们可以找出满足构造不带回溯的自上而下分析的文法条件。
-\textcolor{mark}{
+\textcolor{imp}{
     \begin{enumerate}
         \item 文法不含左递归。
-        \item 文法中每一个非终结符 A 的各个产生式的候选首符集两两不相交。
-        \item 对文法中的每个非终结符A，若它存在某个候选首符集包含 $\epsilon$，则
-              \[ \text{FIRST(A)} \cap \text{FOLLOW(A)} = \phi \]
+        \item 文法中每一个非终结符 A 的各个产生式($A\rightarrow \alpha_1 | \alpha_2$)的候选首符集两两不相交。
+              \[FIRST(\alpha_1) \cap FIRST(\alpha_2) = \phi \]
+        \item 对文法中的每个非终结符A，若它存在某个 $FIRST$ 集包含 $\epsilon$，则
+              \[ FIRST(A) \cap FOLLOW(A) = \phi \]
     \end{enumerate}}
 如果一个文法 G 满足以上条件，则称该文法 G 为 LL(1) 文法。\textcolor{mark}{LL(1) 中第一个 L 表示从左到右扫描输入串，第二个 L 表示最左推导，1 表示分析时每一步只需向前查看一个符号。}
 
@@ -334,7 +335,7 @@ $FOLLOW(X)$ 集定义: 所有句型中出现在紧接 X 之后的终结符, 若 
 
 计算 $FOLLOW$ 集首先需要计算 $FIRST$ 集，然后对每个产生式从左到右进行如下分析\footnote{这里有更详细的讲解: \url{https://www.bilibili.com/video/BV1zW411t7YE?p=22}}:
 \begin{itemize}
-    \item 如果是最右符号，加入结束符 \#。
+    \item 如果是开始符，加入结束符 \#。
     \item 将紧挨着的下一个非终结符的 $FIRST$ 集中的非终结符(不包含 $\epsilon$ )加入到前一个非终结符的 $FOLLOW$ 集中。
     \item 如果某个非终结符的 $FIRST$ 集中包含 $\epsilon$，则需屏蔽该非终结符进行分析。
     \item 表达式右边的最后一个非终结符的 $FOLLOW$ 集包含表达式左边最后一个非终结符的 $FOLLOW$ 集。
@@ -392,7 +393,15 @@ $SELECT$ 集计算的三种情况:
 
 \noindent\textbf{判断是否为 LL(1) 文法}
 
-判断是否为 LL(1) 文法只需要看左部相同的产生式的 $SELECT$ 集是否相交。不相交，则是 LL(1) 文法。
+判断是否为 LL(1) 文法只需要看左部相同的产生式的 $SELECT$ 集是否相交。不相交，则是 LL(1) 文法。当然也可以根据定义判断(无需计算 SELECT 集):
+\textcolor{imp}{
+    \begin{enumerate}
+        \item 文法不含左递归。
+        \item 文法中每一个非终结符 A 的各个产生式($A\rightarrow \alpha_1 | \alpha_2$)的候选首符集两两不相交。
+              \[FIRST(\alpha_1) \cap FIRST(\alpha_2) = \phi \]
+        \item 对文法中的每个非终结符A，若它存在某个 $FIRST$ 集包含 $\epsilon$，则
+              \[ FIRST(A) \cap FOLLOW(A) = \phi \]
+    \end{enumerate}}
 
 \noindent\textbf{预测分析表}
 
