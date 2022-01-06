@@ -1,0 +1,126 @@
+\section{属性文法和语法制导翻译}
+
+这节开始都是概念，没有大题，强烈建议看视频，不然光看不做题肯定是不会的。由于不考大题，所以本章知识点很少。
+
+\subsection{语法制导翻译}
+
+语法制导翻译包括语法分析，语义分析，中间代码生成。语义翻译包括语义分析，中间代码生成。
+
+语法制导翻译使用上下文无关文法来引导对语言的翻译，是一种面向文法的翻译技术。
+
+\noindent\textbf{语法制导定义(SDD)}
+
+SDD 是对 CFG(上下文无关文法) 的推广:
+\begin{itemize}
+    \item 将每个文法符号和一个语义属性集合相关联
+    \item 将每个产生式和一组语义规则相关联，这些规则用于计算该产生式中各文法符号的属性值。
+\end{itemize}
+
+如果 X 是一个文法符号，a 是 X 的一个属性，则用 X.a 表示属性 a 在某个标号为 X 的分析树结点上的值。
+
+SDD 是关于语言翻译的高层次规格说明。它隐藏了许多具体实现细节，使用户不必显式地说明翻译发生的顺序。
+\[L.inh = T.type\]
+
+\noindent\textbf{语法制导翻译方案(SDT)}
+
+SDT 是在产生式右部嵌入了程序片段的 CFG，这些程序片段称为语义动作。语义动作放在花括号内。
+\[D \rightarrow T\{L.inh = T.type\}L\]
+
+SDT 可以看作是对 SDD 的一种补充，是 SDD 的具体实施方案。它显式地指明了语义规则地计算孙旭，以便说明某些实现细节。
+
+\subsection{语法制导定义}
+
+文法符号的属性分两种:
+\begin{itemize}
+    \item 综合属性: 只能通过\textcolor{imp}{子结点和本身}的属性值来定义。终结符也可以有综合属性，但不能通过 SDD 来计算。
+    \item 继承属性: 只能通过\textcolor{imp}{父结点，兄弟节点，本身}的属性值来定义。
+\end{itemize}
+
+一个没有副作用的 SDD 也称为属性文法。即属性文法的规则仅仅通过其它属性值和常量来定义一个属性值。
+
+\subsubsection{SDD 求值顺序}
+
+语义规则建立了属性之间的依赖关系，在对语法分析节点的一个属性求值之前，必须首先求出这个属性值所依赖的所有属性值。
+
+\noindent\textbf{依赖图}
+
+依赖图是一个描述了分析树中结点属性间依赖关系的有向图。分析树中每个标号为 X 的结点的每个属性 a 都对应着依赖图中的一个结点。如果属性 X.a 的值依赖于属性 Y.b 的值，则依赖图中有一条从 Y.b 的结点指向 X.a 的结点的有向边。一般地，将继承属性放在节点树的左边，综合属性放在结点树的右边\footnote{图太难画了，不画了。}。
+
+可行的求值顺序是满足下列条件的结点序列 $N_1, N_2, \cdots, N_k$: 如果依赖图中有一条从结点 $N_i$ 到 $N_j$ 的边，那么 $i<j$。
+
+这样的排序将一个有向图变成了一个线性排序，这个排序称为这个图的拓扑排序。
+
+\subsubsection{\textcolor{mark}{S-属性定义与L-属性定义}}
+
+S 属性的 SDD: 仅仅使用综合属性的 SDD。如果一个 SDD 是 S 属性的，那么就可以\textcolor{mark}{自底向上}计算各个属性值。每个 S-属性定义都是 L-属性定义。
+
+L 属性定义: 在一个产生式所关联的各属性之间，依赖图的边可以从左到右，但不能从右到左。
+
+L-SDD 的正式定义: 一个 SDD 是 L 属性定义，当且仅当它的每个属性要么是一个综合属性，要么是满足如下条件的继承属性: 假设存在一个产生式 $A \rightarrow X_1 X_2 \cdots X_n$，其右部符号 $X_i$ 的继承属性仅依赖于下列属性:
+\begin{itemize}
+    \item A 的继承属性
+    \item 产生式中 $X_i$ 左边的符号  $X_1 X_2 \cdots X_{i-1}$ 的属性
+    \item $X_i$ 本身的属性，但 $X_i$ 的全部属性不能再依赖图中形成环路。
+\end{itemize}
+
+\subsection{语法制导翻译方案}
+
+在以下两种情况下，SDT 可在语法分析过程中实现:
+\begin{itemize}
+    \item 基本文法可以使用 LR 分析技术，且 SDD 是 S 属性的。
+    \item 基本文法可以使用 LL 分析技术，且 SDD 是 L 属性的。
+\end{itemize}
+
+\noindent\textbf{将 S-SDD 转换为 SDT}
+
+转换方法: 将每个语义动作都放在产生式的最后。比如有 S-SDD 如下:
+\[L\rightarrow En  \qquad  L.val = E.val\]
+转换为 SDT:
+\[L \rightarrow En\{L.val = E.val\}\]
+
+\noindent\textbf{\textcolor{imp}{将 L-SDD 转换为 SDT}}
+
+将计算某个非终结符号 A 的继承属性的动作插入到产生式右部中仅靠在 A 的本次出现之前的位置上。
+
+将计算一个产生式左部符号的综合属性的动作放置在这个产生式右部的最右端。
+
+举个例子：
+\[T\rightarrow FT' \qquad T'.inh = F.val \qquad T.val = T'.syn \]
+转换为 SDT:
+\[T \rightarrow F\{T'.int = F.val\}T'\{T.val = T'.syn\}\]
+
+\subsection{\textcolor{mark}{自下而上计算继承属性}}
+
+这里指 L-属性定义的自底向上翻译。
+
+给定一个以 LL 文法为基础的 L-SDD, 可以修改这个文法，并在 LR 语法分析过程中计算这个新文法之上的 SDD。
+
+举个例子: 有如下两个产生式:
+\begin{equation}
+    \begin{aligned}
+         & T \rightarrow F\{T'.inh = F.val\} T' \{T.val = T'.syn\}                                     \\
+         & T' \rightarrow *F\{T_1 '.inh = T'.inh \times F.val\} T_1 ' \{T'.syn = T_1 '.syn\} \nonumber
+    \end{aligned}
+\end{equation}
+
+修改规则:
+\begin{itemize}
+    \item 将原产生式右边的属性，设置为新的继承属性，用下标 i 表示
+    \item 将原产生式左边的属性，设置为新的综合属性，用下标 s 表示
+\end{itemize}
+
+转换后:
+\begin{equation}
+    \begin{aligned}
+         & T \rightarrow FMT'\{T.val = T'.syn\}                                                     \\
+         & M \rightarrow \epsilon \{M.i = F.val; M.s = M.i\}                                        \\
+         & T' \rightarrow *FNT_1 ' \{T'.syn = T_1 '.syn\}                                           \\
+         & N \rightarrow \epsilon \{N.i1 = T'.inh; N.i2 = F.val; N.s = N.i1 \times N.i2\} \nonumber
+    \end{aligned}
+\end{equation}
+
+\subsection{总结与题型}
+
+\includegraphics[width=16cm]{../figures/6.语法制导翻译.pdf}
+
+\newpage

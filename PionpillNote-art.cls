@@ -121,19 +121,46 @@
 
 % ========================= 基础格式 =========================
 % ========== 字体设置 ==========
-% \setCJKmainfont[Mapping=fullwidth-stop]{SimSun}
-% \setCJKmainfont[BoldFont=SimHei,ItalicFont=KaiTi]{SimSun}
-% \setmainfont{Times New Roman}
 \def\bianhao#1{\gdef\@bianhao{#1}}
 \def\tihao#1{\gdef\@tihao{#1}}
 \def\timu#1{\gdef\@timu{#1}}
 \def\keyword#1{\gdef\@keyword{#1}}
-% ========== 符号设置 ==========
-\def\ee{\mathrm{e}}
-\def\ii{\mathrm{i}}
-\def\leq{\leqslant}
-\def\geq{\geqslant}
 
+\setmainfont{Times New Roman}
+
+\PassOptionsToPackage{no-math}{fontspec}
+\RequirePackage{iftex}
+\ifdefstring{\ELEGANT@lang}{cn}{
+  \ifXeTeX
+    \ifdefstring{\ELEGANT@chinesefont}{founder}{
+      \RequirePackage[UTF8,scheme=plain,fontset=none]{ctex}
+      \setCJKmainfont[BoldFont={FZHei-B01},ItalicFont={FZKai-Z03}]{FZShuSong-Z01}
+      \setCJKsansfont[BoldFont={FZHei-B01},ItalicFont={FZHei-B01}]{FZHei-B01}
+      \setCJKmonofont[BoldFont={FZHei-B01},ItalicFont={FZHei-B01}]{FZFangSong-Z02}
+      \setCJKfamilyfont{zhsong}{FZShuSong-Z01}
+      \setCJKfamilyfont{zhhei}{FZHei-B01}
+      \setCJKfamilyfont{zhkai}{FZKai-Z03}
+      \setCJKfamilyfont{zhfs}{FZFangSong-Z02}
+      \newcommand*{\songti}{\CJKfamily{zhsong}}
+      \newcommand*{\heiti}{\CJKfamily{zhhei}}
+      \newcommand*{\kaishu}{\CJKfamily{zhkai}}
+      \newcommand*{\fangsong}{\CJKfamily{zhfs}}}{\relax}
+    
+    \ifdefstring{\ELEGANT@chinesefont}{nofont}{
+      \RequirePackage[UTF8,scheme=plain,fontset=none]{ctex}}{\relax}
+
+    \ifdefstring{\ELEGANT@chinesefont}{ctexfont}{
+      \RequirePackage[UTF8,scheme=plain]{ctex}}{\relax}
+  \else
+    \ifdefstring{\ELEGANT@chinesefont}{ctexfont}{
+      \RequirePackage[UTF8,scheme=plain]{ctex}}{\relax}
+  \fi
+  \AfterEndPreamble{
+    % \renewcommand{\itshape}{\kaishu}
+    \setlength\parindent{2\ccwd}}
+}{\relax}
+
+\setmonofont{Consolas}[Scale=0.95]
 % ========================= 章节格式 =========================
 % ========== 目录格式 ==========
 \setcounter{secnumdepth}{3}

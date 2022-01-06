@@ -1,0 +1,48 @@
+\section{语义分析和中间代码生成}
+
+这章内容更少，主要是不知道考什么，也没讲什么。
+
+\subsection{中间语言}
+\subsubsection{后缀式}
+
+后缀表示法又称逆波兰表示法，这种表示法是把操作数写在前面，把算符写在后面。一个表达式 E 的后缀形式定义如下:
+\begin{itemize}
+    \item 如果 R 是一个变量或常量，其后缀式是本身。
+    \item 如果 E 是 $E_1 op E_2$ 的形式，则变成 $E_1'E_2'op$ 这里 $E_1',E_2'$ 表示原先的后缀式。
+    \item (E) 的后缀式和 E 的后缀式相同。
+\end{itemize}
+
+后缀表达式转换学过很多遍了，不再赘述，参考文献: \url{https://blog.csdn.net/qq_36631580/article/details/88685588}
+
+\subsubsection{DAG 图}
+DAG(无循环有向)图和之前构建的语法树非常相似，不同的是一个节点可以拥有几个父节点。没了。
+
+比如有个表达式: $a+a*(b-c)+(b-c)*d$
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font = \small,thick]
+        \node (1-1) at (0,0) {+};
+        \node (2-1) at (-1.5,-1.5) {+};
+        \node (2-2) at (1.5,-1.5) {*};
+        \node (3-1) at (-0.5,-3) {*};
+        \node (3-2) at (3,-3) {d};
+        \node (4-1) at (-1.5,-4.5) {a};
+        \node (4-2) at (0.5,-4.5) {-};
+        \node (5-1) at (0,-6) {b};
+        \node (5-2) at (1.5,-6) {c};
+        \draw (1-1)--(2-1) (1-1)--(2-2) (2-1)--(3-1) (2-2)--(4-2) (2-2)--(3-2) (3-1)--(4-1) (3-1)--(4-2) (4-2)--(5-1) (4-2)--(5-2);
+        \draw (2-1) to[out=210,in=150] (4-1);
+    \end{tikzpicture}
+    \caption{DAG}
+    \label{fig:DAG}
+\end{figure}
+
+\subsubsection{三地址代码}
+为什么不问问许小龙呢?
+
+\subsection{总结与题型}
+
+\includegraphics[width=16cm]{../figures/7.中间代码生成.pdf}
+
+\includegraphics[width=16cm]{../figures/题目DAG的生成与优化.pdf}
